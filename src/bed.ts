@@ -27,9 +27,8 @@ export class Bed extends Phaser.GameObjects.Container {
     protected createSprite() {
         this.sprite = this.scene.add.sprite(0, 0, 'bed', 0);
         this.add(this.sprite);
-        // let bubble = this.scene.add.image(0, -100, 'bubble');
-        let bubble = this.scene.add.rectangle(0, -50, 50, 50, 0xff0000);
-        this.add(bubble);
+        let infoField = this.scene.add.image(0, -50, 'info_field');
+        this.add(infoField);
     }
 
     generatePatient(difficulty: number) {

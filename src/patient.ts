@@ -18,18 +18,17 @@ export class Patient extends Phaser.GameObjects.Container {
     constructor(scene: Phaser.Scene, bed: Bed) {
         super(scene, 100, 100);
         this.organs = {
-            heart: new Organ(this.scene, 'heart', bed),
-            lung: new Organ(this.scene, 'lung', bed),
-            liver: new Organ(this.scene, 'liver', bed)
+            cranium: new Organ(this.scene, 'cranium', bed),
+            liver: new Organ(this.scene, 'liver', bed),
+            nephro: new Organ(this.scene, 'nephro', bed)
         };
         
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y);
 
-        this.scene.events.on('update', this.updateStuff.bind(this));
+        this.scene.events.on('update', this.update.bind(this));
     }
 
-    updateStuff(time: number, delta: number) {
-        // console.log('update patient');
+    update(time: number, delta: number) {
         if (time >= this.nextProblemTime) {
             this.nextProblem();
         }

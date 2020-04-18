@@ -1,3 +1,5 @@
+import { Organ } from './organ';
+
 export class TrashCan extends Phaser.GameObjects.Sprite {
 
     doctorPosition: Phaser.Geom.Point;
@@ -8,6 +10,14 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
         this.y = 200;
         this.doctorPosition = new Phaser.Geom.Point(this.x - 20, this.y);
         this.setInteractive();
+    }
+
+    popOrgan(type: string): Organ {
+        return null;
+    }
+
+    setOrgan(organ: Organ): boolean {
+        return true;
     }
 
 }

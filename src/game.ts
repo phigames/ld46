@@ -18,8 +18,18 @@ export default class Level extends Phaser.Scene {
         this.currentBed = null
     }
 
+    loadImage(name: string) {
+        this.load.image(name, `assets/${name}.png`);
+    }
+
+    loadSpreadsheet(name: string, frameWidth: number, frameHeight: number) {
+        this.load.spritesheet(name, `assets/${name}.png`, { frameWidth: frameWidth, frameHeight: frameHeight });
+    }
+
     preload() {
-        this.load.spritesheet('bed', 'assets/bed.png', { frameWidth: 50, frameHeight: 50 });
+        this.loadImage('info_field');
+        this.loadSpreadsheet('bed', 50, 50);
+        this.loadSpreadsheet('doctor_frames', 50, 50);
     }
 
     create() {
@@ -28,6 +38,8 @@ export default class Level extends Phaser.Scene {
             this.add.existing(bed);
             bed.generatePatient(0);
         }
+        let doc = new Doctor(this);
+        this.add.existing(doc);
         this.trashcan = new TrashCan(this);
         this.add.existing(this.trashcan);
         this.trashcan.on('pointerdown', this.onTrashcanClick.bind(this));

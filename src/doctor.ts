@@ -1,6 +1,6 @@
 import 'phaser';
 import { Organ } from './organ';
-import { TrashCan } from './bed';
+import { TrashCan } from './trashcan';
 import { Patient } from './patient';
 
 
@@ -30,7 +30,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.setX(25);
         this.setY(this.centerLane);
 
-        this.scene.events.on('update', this.update);
+        this.scene.events.on('update', this.update.bind(this));
     }
 
     setTarget(target: Patient | TrashCan) {

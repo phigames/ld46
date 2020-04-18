@@ -2,8 +2,12 @@ import 'phaser';
 import { Bed } from './bed';
 
 
-export type OrganType = 'heart' | 'lung' | 'liver';
-export const ORGAN_TYPES: OrganType[] = ['heart', 'lung', 'liver'];
+export type OrganType = 'cranium' | 'liver' | 'nephro';
+export const ORGAN_TYPES: OrganType[] = ['cranium', 'liver', 'nephro'];
+
+const OFFSET = {
+    
+}
 
 
 export class Organ extends Phaser.GameObjects.Sprite {
@@ -14,7 +18,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private dead: boolean;
 
     constructor(scene: Phaser.Scene, type: string, bed: Bed) {
-        super(scene, 0, -50, 'bed');
+        super(scene, 0, -50, 'organ_' + type);
         this.scene.add.existing(this);
         bed.add(this);
         this.type = type;
