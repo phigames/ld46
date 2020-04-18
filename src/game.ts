@@ -6,6 +6,10 @@ import { Patient } from './patient';
 import { OrganType } from './organ';
 
 
+export const FONT_FAMILY = 'akhbar';
+export const DARK_COLOR = '#28221f';
+
+
 export default class Level extends Phaser.Scene {
 
     currentDoc: Doctor
@@ -27,6 +31,9 @@ export default class Level extends Phaser.Scene {
     }
 
     preload() {
+        this.loadImage('organ_cranium');
+        this.loadImage('organ_liver');
+        this.loadImage('organ_nephro');
         this.loadImage('info_field');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor_frames', 50, 50);
@@ -43,6 +50,7 @@ export default class Level extends Phaser.Scene {
         this.trashcan = new TrashCan(this);
         this.add.existing(this.trashcan);
         this.trashcan.on('pointerdown', this.onTrashcanClick.bind(this));
+        this.add.text(40, 150, ['Lorem ipsum dolor sit amet.', 'Blabliblubb und Zötteli dra'], { fontFamily: FONT_FAMILY });
     }
 
     onDoctorClick(doctor: Doctor) {
