@@ -12,19 +12,23 @@ const OFFSET = {
 
 export class Organ extends Phaser.GameObjects.Sprite {
 
-    type: string;
+    private organType: OrganType;
     private originalTimeToDecay: number;
     private timeToDecay: number;
     private dead: boolean;
 
-    constructor(scene: Phaser.Scene, type: string, bed: Bed) {
-        super(scene, 0, -50, 'organ_' + type);
+    constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed) {
+        super(scene, 0, -50, 'organ_' + organType);
         this.scene.add.existing(this);
         bed.add(this);
-        this.type = type;
+        this.organType = organType;
         this.timeToDecay = null;
         this.setInteractive();
         this.startDecay(2000);
+    }
+
+    getType(): OrganType {
+        return this.organType;
     }
 
     startDecay(timeToDecay: number) {

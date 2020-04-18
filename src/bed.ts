@@ -1,6 +1,6 @@
 import 'phaser';
 import { Patient } from './patient';
-import { OrganType } from './organ';
+import { Organ } from './organ';
 
 
 const WIDTH = 50;
@@ -13,9 +13,9 @@ export class Bed extends Phaser.GameObjects.Container {
 
     patient: Patient;
     protected sprite: Phaser.GameObjects.Sprite;
-    private onOrganClick: (patient: Patient, organType: OrganType) => void;
+    private onOrganClick: (patient: Patient, organ: Organ) => void;
 
-    constructor(scene: Phaser.Scene, slot: number, onOrganClick: (patient: Patient, organType: OrganType) => void) {
+    constructor(scene: Phaser.Scene, slot: number, onOrganClick: (patient: Patient, organ: Organ) => void) {
         super(scene, WIDTH, HEIGHT);
         this.patient = null;
         this.onOrganClick = onOrganClick;
