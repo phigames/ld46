@@ -50,6 +50,7 @@ export class Level extends Phaser.Scene {
         this.loadImage('organ_liver');
         this.loadImage('organ_nephro');
         this.loadImage('pit');
+        this.loadImage('pits_front');
         this.loadImage('grinder_back');
         this.loadImage('grinder_front');
         this.loadSpreadsheet('bed', 50, 50);
@@ -67,6 +68,7 @@ export class Level extends Phaser.Scene {
 
     create() {
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
 
         for (let i = 0; i < 7; i++) {
             let bed = new Bed(this, i, this.onOrganClick.bind(this));
@@ -76,10 +78,10 @@ export class Level extends Phaser.Scene {
         }
         this.spawnPatient();
 
-        this.trashcanLeft = new TrashCan(this, 30, GAME_HEIGHT - 30);
+        this.trashcanLeft = new TrashCan(this, 60, GAME_HEIGHT - 35);
         this.add.existing(this.trashcanLeft);
         this.trashcanLeft.on('pointerdown', () => this.onTrashcanClick(this.trashcanLeft));
-        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 30, GAME_HEIGHT - 30);
+        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 60, GAME_HEIGHT - 35);
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 

@@ -23,6 +23,18 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
     }
 
     setOrgan(organ: Organ): boolean {
+        this.scene.add.existing(organ);
+        organ.x = this.x
+        organ.y = this.y - 22;
+        this.scene.tweens.add({
+            targets: organ,
+            y: this.y + 20,
+            ease: 'Quad.In',
+            duration: 500,
+            onComplete: () => {
+                organ.destroy();
+            }
+        });
         this.pitSound.play();
         return true;
     }
