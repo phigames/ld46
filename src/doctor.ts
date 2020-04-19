@@ -25,9 +25,11 @@ export class Doctor extends Phaser.GameObjects.Container {
     protected sprite: Phaser.GameObjects.Sprite
     private selected: boolean;
     private dead: boolean;
+    private nextTask;
 
     constructor(scene: Phaser.Scene) {
         super(scene);
+        this.name = 'doctor';
         this.organ = null;
         this.target = null;
         this.moveMode = 'start';
@@ -36,6 +38,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.startX = Phaser.Math.Between(30, 100);
         this.selected = false;
         this.dead = false;
+        this.nextTask = null;
         this.setX(-50);
         this.setY(this.centerLane);
         this.createSprite();
@@ -80,6 +83,17 @@ export class Doctor extends Phaser.GameObjects.Container {
     setTarget(target: Patient | TrashCan | Grinder | Organ) {
         this.target = target;
         this.moveMode = 'walk-to-x';
+    }
+
+    moveOrgan(source: Patient | Organ, organType: OrganType, target: Patient | TrashCan | Grinder) {
+        console.log(`moving ${organType} from ${source} to ${target}`);
+        
+        if (source instanceof Patient) {
+            this.setRemoveTarget(source, organType);
+        } else {
+            this.setTarget(source);
+        }
+        this.nextTask = () => this.setTarget(target);
     }
 
     private walkToStart(delta: number): boolean {
@@ -203,12 +217,20 @@ export class Doctor extends Phaser.GameObjects.Container {
                     if (this.organ === null) {
                         this.organ = this.target.popOrgan(this.removeOrganType);
                         if (this.organ !== null) {
+                            // successful removal
                             this.add(this.organ);
+                        } else {
+                            // failed removal
+                            this.nextTask = null;
                         }
                     } else if (this.organ !== null) {
                         if (this.target.setOrgan(this.organ)) {
+                            // successful insertion
                             this.remove(this.organ);
                             this.organ = null;
+                            this.nextTask = null;
+                        } else {
+                            // failed insertion
                         }
                     }
                     this.target = null;
@@ -217,12 +239,19 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.target.grind(this);
                     this.dead = true;
                 } else if (this.target instanceof Organ) {
+                    // TODO: check if organ is actually still there
                     this.organ = this.target;
                     this.add(this.organ);
+                    this.target = null;
+                    this.moveMode = 'return';
                 }
             }
         } else if (this.moveMode == 'return') {
-            this.walkToCenter(delta);
+            if (this.walkToCenter(delta)) {
+                if (this.nextTask !== null) {
+                    this.nextTask();
+                }
+            }
         }
         this.updateAnimation();
         this.updateOrganPosition();

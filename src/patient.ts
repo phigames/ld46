@@ -17,9 +17,9 @@ export class Patient extends Phaser.GameObjects.Container {
         super(scene, 100, 100);
         this.bed = bed;
         this.organs = {
-            cranium: new Organ(this.scene, 'cranium', bed),
-            liver: new Organ(this.scene, 'liver', bed),
-            nephro: new Organ(this.scene, 'nephro', bed)
+            cranium: new Organ(this.scene, 'cranium', bed, this),
+            liver: Math.random() < 0.5 ? null : new Organ(this.scene, 'liver', bed, this),
+            nephro: new Organ(this.scene, 'nephro', bed, this)
         };
         this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
