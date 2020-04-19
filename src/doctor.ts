@@ -1,4 +1,5 @@
 import 'phaser';
+import { updatesPaused } from './game';
 import { Organ, OrganType } from './organ';
 import { TrashCan } from './trashcan';
 import { Patient } from './patient';
@@ -18,6 +19,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     removeOrganType: OrganType;
     centerLane: number;
     protected sprite: Phaser.GameObjects.Sprite
+    private selected: boolean;
 
     constructor(scene: Phaser.Scene) {
         super(scene);
@@ -26,18 +28,26 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.moveMode = null;
         this.removeOrganType = null;
         this.centerLane = Phaser.Math.Between(150, 200);
+        this.selected = false;
         this.setX(25);
         this.setY(this.centerLane);
         this.createSprite();
         this.setInteractive();
 
         this.scene.events.on('update', this.update.bind(this));
+        this.on('pointerover', () => this.alpha = 0.5);
+        this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
     }
 
     protected createSprite() {
         this.sprite = this.scene.add.sprite(0, 0, 'doctor', 0);
         this.add(this.sprite);
-        this.setSize(50, 50);
+        this.setSize(16, 50);
+    }
+
+    setSelected(selected: boolean) {
+        this.selected = selected;
+        this.alpha = selected ? 0.5 : 1;
     }
 
     isReadyToRemove() {
@@ -100,6 +110,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                         reachedTarget = true;
                     }
                 }
+                this.sprite.flipX = false;
                 break;
         }
         return reachedTarget;
@@ -152,6 +163,9 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     update(time: number, delta: number) {
+        if (updatesPaused) {
+            return;
+        }
         if (this.target !== null) {
             if (this.walkToTarget(delta)) {
                 // arrived at target

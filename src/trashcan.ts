@@ -10,6 +10,8 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
         this.y = 200;
         this.doctorPosition = new Phaser.Geom.Point(this.x - 20, this.y);
         this.setInteractive();
+        this.on('pointerover', () => this.alpha = 0.5);
+        this.on('pointerout', () => this.alpha = 1);
     }
 
     popOrgan(type: string): Organ {

@@ -1,4 +1,5 @@
 import 'phaser';
+import { updatesPaused } from './game';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
 
@@ -27,6 +28,9 @@ export class Patient extends Phaser.GameObjects.Container {
     }
 
     update(time: number, delta: number) {
+        if (updatesPaused) {
+            return;
+        }
         this.nextProblemTime -= delta;
         if (this.nextProblemTime <= 0) {
             this.nextProblem();

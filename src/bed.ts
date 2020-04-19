@@ -5,7 +5,7 @@ import { Organ } from './organ';
 
 const WIDTH = 50;
 const HEIGHT = 50;
-const SPACING = 70;
+const SPACING = 60;
 const YPOS = 100;
 
 
@@ -23,6 +23,8 @@ export class Bed extends Phaser.GameObjects.Container {
         this.y = YPOS;
         this.createSprite();
         this.setInteractive();
+        this.on('pointerover', () => this.sprite.alpha = 0.5);
+        this.on('pointerout', () => this.sprite.alpha = 1);
     }
 
     protected createSprite() {
@@ -30,7 +32,7 @@ export class Bed extends Phaser.GameObjects.Container {
         this.add(this.sprite);
         let infoBoard = this.scene.add.image(0, -50, 'infoboard');
         this.add(infoBoard);
-        this.setSize(50, 50);
+        this.setSize(40, 50);
     }
 
     canBeInserted(organ: Organ): boolean {

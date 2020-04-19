@@ -1,4 +1,5 @@
 import 'phaser';
+import { updatesPaused } from './game';
 import { FONT_FAMILY, DARK_COLOR } from './game';
 import { Bed } from './bed';
 
@@ -36,6 +37,9 @@ export class Organ extends Phaser.GameObjects.Sprite {
     removeFromBed(bed: Bed) {
         bed.remove(this);
         bed.remove(this.countdownText);
+        this.alpha = 1;
+        this.off('pointerover');
+        this.off('pointerout');
     }
 
     addToBed(bed: Bed) {
@@ -43,6 +47,8 @@ export class Organ extends Phaser.GameObjects.Sprite {
         bed.add(this.countdownText);
         this.x = OFFSET[this.organType].x;
         this.y = OFFSET[this.organType].y;
+        this.on('pointerover', () => this.alpha = 0.5);
+        this.on('pointerout', () => this.alpha = 1);
     }
 
     getType(): OrganType {
@@ -66,6 +72,9 @@ export class Organ extends Phaser.GameObjects.Sprite {
     }
 
     update(time: number, delta: number) {
+        if (updatesPaused) {
+            return;
+        }
         if (this.timeToDecay !== null) {
             this.countdownText.setText(this.getCountdown());
             this.timeToDecay -= delta;
