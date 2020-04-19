@@ -1,15 +1,19 @@
 import { Organ } from './organ';
+import { HOVER_OPACITY } from './global';
 
 export class TrashCan extends Phaser.GameObjects.Sprite {
 
     readonly doctorPosition: Phaser.Geom.Point;
 
-    constructor(scene: Phaser.Scene) {
-        super(scene, 0, 0, 'bed');
-        this.x = 300;
-        this.y = 200;
+    constructor(scene: Phaser.Scene, x: number, y: number) {
+        super(scene, 0, 0, 'pit');
+        this.x = x;
+        this.y = y;
+        this.depth = this.y + this.height / 2;
         this.doctorPosition = new Phaser.Geom.Point(this.x - 20, this.y);
         this.setInteractive();
+        this.on('pointerover', () => this.alpha = HOVER_OPACITY);
+        this.on('pointerout', () => this.alpha = 1);
     }
 
     popOrgan(type: string): Organ {

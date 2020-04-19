@@ -2,10 +2,14 @@ import 'phaser';
 import { Organ, OrganType } from './organ';
 import { TrashCan } from './trashcan';
 import { Patient } from './patient';
+import { uglySettings, HOVER_OPACITY, SELECT_OPACITY } from './global';
+import { Grinder } from './grinder';
 
 
-type MoveMode = 'walk-to-x' | 'walk-to-y' | 'return';
-type TaskMode = 'insert' | 'remove';
+const SPEED = 0.05;
+
+
+type MoveMode = 'start' | 'walk-to-x' | 'walk-to-y' | 'return';
 
 
 export class Doctor extends Phaser.GameObjects.Container {
@@ -13,31 +17,47 @@ export class Doctor extends Phaser.GameObjects.Container {
     static yLane = 200
 
     organ: Organ;
-    target: Patient | TrashCan;
-    moveMode: MoveMode;
-    removeOrganType: OrganType;
-    centerLane: number;
+    private target: Patient | TrashCan | Grinder | Organ;
+    private moveMode: MoveMode;
+    private removeOrganType: OrganType;
+    private centerLane: number;
+    private startX: number;
     protected sprite: Phaser.GameObjects.Sprite
+    private selected: boolean;
 
     constructor(scene: Phaser.Scene) {
         super(scene);
         this.organ = null;
         this.target = null;
-        this.moveMode = null;
+        this.moveMode = 'start';
         this.removeOrganType = null;
-        this.centerLane = Phaser.Math.Between(150, 200);
-        this.setX(25);
+        this.centerLane = Phaser.Math.Between(130, 180);
+        this.startX = Phaser.Math.Between(30, 100);
+        this.selected = false;
+        this.setX(-50);
         this.setY(this.centerLane);
         this.createSprite();
         this.setInteractive();
 
         this.scene.events.on('update', this.update.bind(this));
+        this.on('pointerover', () => this.alpha = HOVER_OPACITY);
+        this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
+        this.on('destroy', () => {
+            if (this.organ !== null) {
+                this.organ.destroy();
+            }
+        });
     }
 
     protected createSprite() {
         this.sprite = this.scene.add.sprite(0, 0, 'doctor', 0);
         this.add(this.sprite);
-        this.setSize(50, 50);
+        this.setSize(16, 50);
+    }
+
+    setSelected(selected: boolean) {
+        this.selected = selected;
+        this.alpha = selected ? SELECT_OPACITY : 1;
     }
 
     isReadyToRemove() {
@@ -54,18 +74,29 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.removeOrganType = organType;
     }
 
-    setInsertTarget(target: Patient | TrashCan) {
+    setTarget(target: Patient | TrashCan | Grinder | Organ) {
         this.target = target;
         this.moveMode = 'walk-to-x';
     }
 
-    walkToTarget(delta: number): boolean {
+    private walkToStart(delta: number): boolean {
+        if (this.x < this.startX) {
+            this.x += delta * SPEED;
+        } else {
+            this.x = this.startX;
+            this.moveMode = null;
+            return true;
+        }
+        return false;
+    }
+
+    private walkToTarget(delta: number): boolean {
         let reachedTarget = false;
         switch (this.moveMode) {
             case 'walk-to-x':
                 if (this.x <= this.target.doctorPosition.x) {
                     // walk right
-                    this.x += delta*0.05
+                    this.x += delta * SPEED;
                     if (this.x >= this.target.doctorPosition.x) {
                         this.x = this.target.doctorPosition.x;
                         this.moveMode = 'walk-to-y';
@@ -73,7 +104,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.sprite.flipX = false;
                 } else if (this.x > this.target.doctorPosition.x) {
                     // walk left
-                    this.x -= delta*0.05;
+                    this.x -= delta * SPEED;
                     if (this.x <= this.target.doctorPosition.x) {
                         this.x = this.target.doctorPosition.x;
                         this.moveMode = 'walk-to-y';
@@ -85,7 +116,7 @@ export class Doctor extends Phaser.GameObjects.Container {
             case 'walk-to-y':
                 if (this.y <= this.target.doctorPosition.y) {
                     // walk down
-                    this.y += delta*0.05;
+                    this.y += delta * SPEED;
                     if (this.y >= this.target.doctorPosition.y) {
                         this.y = this.target.doctorPosition.y;
                         this.moveMode = null;
@@ -93,29 +124,30 @@ export class Doctor extends Phaser.GameObjects.Container {
                     }
                 } else if (this.y > this.target.doctorPosition.y) {
                     // walk up
-                    this.y -= delta*0.05;
+                    this.y -= delta * SPEED;
                     if (this.y <= this.target.doctorPosition.y) {
                         this.y = this.target.doctorPosition.y;
                         this.moveMode = null;
                         reachedTarget = true;
                     }
                 }
+                this.sprite.flipX = false;
                 break;
         }
         return reachedTarget;
     }
 
-    walkToCenter(delta: number) {
+    private walkToCenter(delta: number) {
         let reachedCenter = false;
         if (this.y <= this.centerLane) {
-            this.y += delta*0.05;
+            this.y += delta * SPEED;
             if (this.y >= this.centerLane) {
                 this.y = this.centerLane;
                 this.moveMode = null;
                 reachedCenter = true;
             }
         } else if (this.y > this.centerLane) {
-            this.y -= delta*0.05;
+            this.y -= delta * SPEED;
             if (this.y <= this.centerLane) {
                 this.y = this.centerLane;
                 this.moveMode = null;
@@ -123,12 +155,6 @@ export class Doctor extends Phaser.GameObjects.Container {
             }
         }
         return reachedCenter;
-    }
-
-    walkToTrash(delta: number){
-        if (this.y != this.centerLane) {
-            this.y -= delta*0.05
-        }
     }
 
     private updateOrganPosition() {
@@ -146,36 +172,54 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     private updateAnimation() {
-        let move = this.moveMode === null ? 'wait' : 'walk';
-        let organ = this.organ === null ? 'without' : 'with';
-        this.sprite.play(`${move}_${organ}`, true);
+        if (this.moveMode === 'start') {
+            this.sprite.play('walk_without', true);
+        } else if (this.moveMode === null && this.target instanceof Grinder) {
+            this.sprite.anims.stop();
+            this.sprite.setFrame(12);
+        } else {
+            let move = this.moveMode === null ? 'wait' : 'walk';
+            let organ = this.organ === null ? 'without' : 'with';
+            this.sprite.play(`${move}_${organ}`, true);
+        }
     }
 
     update(time: number, delta: number) {
-        if (this.target !== null) {
+        if (uglySettings.updatesPaused) {
+            return;
+        }
+        if (this.moveMode == 'start') {
+            this.walkToStart(delta);
+        } else if (this.target !== null) {
             if (this.walkToTarget(delta)) {
                 // arrived at target
-                if (this.organ === null) {
-                    this.organ = this.target.popOrgan(this.removeOrganType);
-                    if (this.organ !== null) {
-                        this.add(this.organ);
+                if (this.target instanceof Patient || this.target instanceof TrashCan) {
+                    if (this.organ === null) {
+                        this.organ = this.target.popOrgan(this.removeOrganType);
+                        if (this.organ !== null) {
+                            this.add(this.organ);
+                        }
+                    } else if (this.organ !== null) {
+                        if (this.target.setOrgan(this.organ)) {
+                            this.remove(this.organ);
+                            this.organ = null;
+                        }
                     }
-                } else if (this.organ !== null) {
-                    if (this.target.setOrgan(this.organ)) {
-                        this.remove(this.organ);
-                        this.organ = null;
-                    }
+                    this.target = null;
+                    this.moveMode = 'return';
+                } else if (this.target instanceof Grinder) {
+                    this.target.grind(this);
+                } else if (this.target instanceof Organ) {
+                    this.organ = this.target;
+                    this.add(this.organ);
                 }
-                this.target = null;
-                this.moveMode = 'return';
             }
-            this.updateAnimation();
-            this.updateOrganPosition();
         } else if (this.moveMode == 'return') {
             this.walkToCenter(delta);
-            this.updateAnimation();
-            this.updateOrganPosition();
         }
+        this.updateAnimation();
+        this.updateOrganPosition();
+        this.depth = this.y + this.height / 2;
     }
 
 }

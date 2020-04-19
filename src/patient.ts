@@ -1,6 +1,7 @@
 import 'phaser';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
+import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL } from './global';
 
 
 export class Patient extends Phaser.GameObjects.Container {
@@ -8,7 +9,6 @@ export class Patient extends Phaser.GameObjects.Container {
     private bed: Bed;
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
-    private organClickCallback: (patient: Patient, organ: Organ) => void;
     readonly doctorPosition: Phaser.Geom.Point;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
@@ -20,24 +20,41 @@ export class Patient extends Phaser.GameObjects.Container {
             nephro: new Organ(this.scene, 'nephro', bed)
         };
 
-        this.nextProblemTime = Math.random() * 10000;
-        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y);
-
-        this.scene.events.on('update', this.update.bind(this));
+        this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
+        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
+        this.on('destroy', () => {
+            for (let organType of ORGAN_TYPES) {
+                if (this.organs[organType] !== null) {
+                    this.organs[organType].destroy()
+                    this.organs[organType] = null;
+                }
+            }
+        });
     }
 
     update(time: number, delta: number) {
+        if (uglySettings.updatesPaused) {
+            return;
+        }
         this.nextProblemTime -= delta;
         if (this.nextProblemTime <= 0) {
             this.nextProblem();
             this.nextProblemTime = 10000;
         }
         
+        let dead = true;
         for (let organType of ORGAN_TYPES) {
             if (this.organs[organType] !== null) {
                 this.organs[organType].update(time, delta);
+                if (!this.organs[organType].isDead()) {
+                    dead = false;
+                }
             }
         }
+        if (dead) {
+            this.bed.onPatientDied();
+        }
+
     }
 
     private nextProblem() {
