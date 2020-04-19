@@ -1,7 +1,7 @@
 import 'phaser';
-import { updatesPaused } from './game';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
+import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL } from './global';
 
 
 export class Patient extends Phaser.GameObjects.Container {
@@ -9,7 +9,6 @@ export class Patient extends Phaser.GameObjects.Container {
     private bed: Bed;
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
-    private organClickCallback: (patient: Patient, organ: Organ) => void;
     readonly doctorPosition: Phaser.Geom.Point;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
@@ -21,14 +20,14 @@ export class Patient extends Phaser.GameObjects.Container {
             nephro: new Organ(this.scene, 'nephro', bed)
         };
 
-        this.nextProblemTime = Math.random() * 10000;
-        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y);
+        this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
+        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 55);
 
         this.scene.events.on('update', this.update.bind(this));
     }
 
     update(time: number, delta: number) {
-        if (updatesPaused) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         this.nextProblemTime -= delta;

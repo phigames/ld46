@@ -4,20 +4,19 @@ import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
+import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT } from './global';
 
 
 export const FONT_FAMILY = 'akhbar';
 export const DARK_COLOR = '#28221f';
 
 
-export var updatesPaused = false;
-
-
-export default class Level extends Phaser.Scene {
+export class Level extends Phaser.Scene {
 
     currentDoc: Doctor;
     currentBed: Bed;
-    trashcan: TrashCan;
+    trashcanLeft: TrashCan;
+    trashcanRight: TrashCan;
     timeToSpawnDoctor: number;
 
     invalidSound: Phaser.Sound.BaseSound;
@@ -26,7 +25,7 @@ export default class Level extends Phaser.Scene {
     constructor() {
         super('level');
         this.currentDoc = null;
-        this.timeToSpawnDoctor = 2000;
+        this.timeToSpawnDoctor = 1000;
     }
 
     loadImage(name: string) {
@@ -59,12 +58,12 @@ export default class Level extends Phaser.Scene {
             bed.generatePatient(0);
             bed.on('pointerdown', () => this.onBedClick(bed));
         }
-        let doc = new Doctor(this);
-        doc.on('pointerdown', () => this.onDoctorClick(doc));
-        this.add.existing(doc);
-        this.trashcan = new TrashCan(this);
-        this.add.existing(this.trashcan);
-        this.trashcan.on('pointerdown', this.onTrashcanClick.bind(this));
+        this.trashcanLeft = new TrashCan(this, 30, GAME_HEIGHT - 30);
+        this.add.existing(this.trashcanLeft);
+        this.trashcanLeft.on('pointerdown', () => this.onTrashcanClick(this.trashcanLeft));
+        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 30, GAME_HEIGHT - 30);
+        this.add.existing(this.trashcanRight);
+        this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 
         this.anims.create({
             key: 'wait_without',
@@ -95,18 +94,32 @@ export default class Level extends Phaser.Scene {
         this.selectSound = this.sound.add('select');
     }
 
+    update(time: number, delta: number) {
+        this.timeToSpawnDoctor -= delta;
+        if (this.timeToSpawnDoctor <= 0) {
+            this.spawnDoctor();
+            this.timeToSpawnDoctor = DOCTOR_SPAWN_INTERVAL;
+        }
+    }
+
+    private spawnDoctor() {
+        let doc = new Doctor(this);
+        doc.on('pointerdown', () => this.onDoctorClick(doc));
+        this.add.existing(doc);
+    }
+
     popup(message: string) {
-        updatesPaused = true;
+        uglySettings.updatesPaused = true;
         let popup = this.add.rectangle(100, 100, 200, 100);
         console.log(message);
         popup.on('click', () => {
-            updatesPaused = false;
+            uglySettings.updatesPaused = false;
             popup.off('click');
         });
     }
 
     onDoctorClick(doctor: Doctor) {
-        if (updatesPaused) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         if (doctor.isReadyToInsert() || doctor.isReadyToRemove()) {
@@ -122,7 +135,7 @@ export default class Level extends Phaser.Scene {
     }
 
     onOrganClick(patient: Patient, organ: Organ) {
-        if (updatesPaused) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         if (this.currentDoc !== null) {
@@ -140,7 +153,7 @@ export default class Level extends Phaser.Scene {
     }
 
     onBedClick(bed: Bed) {
-        if (updatesPaused) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         if (this.currentDoc !== null && this.currentDoc.isReadyToInsert() && bed.canBeInserted(this.currentDoc.organ)) {
@@ -153,12 +166,12 @@ export default class Level extends Phaser.Scene {
         }
     }
 
-    onTrashcanClick() {
-        if (updatesPaused) {
+    onTrashcanClick(trashcan: TrashCan) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         if (this.currentDoc !== null && this.currentDoc.isReadyToInsert()) {
-            this.currentDoc.setInsertTarget(this.trashcan);
+            this.currentDoc.setInsertTarget(trashcan);
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
             this.selectSound.play();
@@ -173,8 +186,8 @@ export default class Level extends Phaser.Scene {
 const config = {
     type: Phaser.AUTO,
     // backgroundColor: '#125555',
-    width: 464,
-    height: 261,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
     pixelArt: true,
     zoom: 3,
     scene: Level

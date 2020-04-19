@@ -1,16 +1,16 @@
 import 'phaser';
-import { updatesPaused } from './game';
 import { FONT_FAMILY, DARK_COLOR } from './game';
 import { Bed } from './bed';
+import { uglySettings, HOVER_OPACITY } from './global';
 
 
 export type OrganType = 'cranium' | 'liver' | 'nephro';
 export const ORGAN_TYPES: OrganType[] = ['cranium', 'liver', 'nephro'];
 
 const OFFSET: Record<OrganType, Phaser.Geom.Point> = {
-    cranium: new Phaser.Geom.Point(-14, -70),
-    liver: new Phaser.Geom.Point(-14, -51),
-    nephro: new Phaser.Geom.Point(-14, -34)
+    cranium: new Phaser.Geom.Point(-14, -45),
+    liver: new Phaser.Geom.Point(-14, -26),
+    nephro: new Phaser.Geom.Point(-14, -9)
 }
 
 
@@ -47,7 +47,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         bed.add(this.countdownText);
         this.x = OFFSET[this.organType].x;
         this.y = OFFSET[this.organType].y;
-        this.on('pointerover', () => this.alpha = 0.5);
+        this.on('pointerover', () => this.alpha = HOVER_OPACITY);
         this.on('pointerout', () => this.alpha = 1);
     }
 
@@ -72,7 +72,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     }
 
     update(time: number, delta: number) {
-        if (updatesPaused) {
+        if (uglySettings.updatesPaused) {
             return;
         }
         if (this.timeToDecay !== null) {
