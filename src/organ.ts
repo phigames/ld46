@@ -1,7 +1,6 @@
 import 'phaser';
-import { FONT_FAMILY, DARK_COLOR } from './game';
 import { Bed } from './bed';
-import { uglySettings, HOVER_OPACITY } from './global';
+import { uglySettings, HOVER_OPACITY, FONT_FAMILY, DARK_COLOR } from './global';
 
 
 export type OrganType = 'cranium' | 'liver' | 'nephro';
@@ -20,6 +19,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private originalTimeToDecay: number;
     private timeToDecay: number;
     private dead: boolean;
+    owned: boolean;
     private countdownText: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed = null) {
@@ -29,11 +29,19 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.organType = organType;
         this.timeToDecay = null;
         this.dead = false;
+        this.owned = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.setInteractive();
         if (bed !== null) {
             this.addToBed(bed);
+        } else {
+            this.on('pointerover', () => this.alpha = HOVER_OPACITY);
+            this.on('pointerout', () => this.alpha = 1);
         }
+    }
+
+    get doctorPosition(): Phaser.Geom.Point {
+        return new Phaser.Geom.Point(this.x, this.y);
     }
 
     removeFromBed(bed: Bed) {

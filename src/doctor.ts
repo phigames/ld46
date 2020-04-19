@@ -17,7 +17,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     static yLane = 200
 
     organ: Organ;
-    private target: Patient | TrashCan | Grinder;
+    private target: Patient | TrashCan | Grinder | Organ;
     private moveMode: MoveMode;
     private removeOrganType: OrganType;
     private centerLane: number;
@@ -69,7 +69,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.removeOrganType = organType;
     }
 
-    setInsertTarget(target: Patient | TrashCan | Grinder) {
+    setTarget(target: Patient | TrashCan | Grinder | Organ) {
         this.target = target;
         this.moveMode = 'walk-to-x';
     }
@@ -167,9 +167,16 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     private updateAnimation() {
-        let move = this.moveMode === null ? 'wait' : 'walk';
-        let organ = this.organ === null ? 'without' : 'with';
-        this.sprite.play(`${move}_${organ}`, true);
+        if (this.moveMode === 'start') {
+            this.sprite.play('walk_without', true);
+        } else if (this.moveMode === null && this.target instanceof Grinder) {
+            this.sprite.anims.stop();
+            this.sprite.setFrame(12);
+        } else {
+            let move = this.moveMode === null ? 'wait' : 'walk';
+            let organ = this.organ === null ? 'without' : 'with';
+            this.sprite.play(`${move}_${organ}`, true);
+        }
     }
 
     update(time: number, delta: number) {
@@ -196,18 +203,17 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.target = null;
                     this.moveMode = 'return';
                 } else if (this.target instanceof Grinder) {
-                    this.sprite.anims.stop();
-                    this.sprite.setFrame(12);
                     this.target.grind(this);
+                } else if (this.target instanceof Organ) {
+                    this.organ = this.target;
+                    this.add(this.organ);
                 }
             }
-            this.updateAnimation();
-            this.updateOrganPosition();
         } else if (this.moveMode == 'return') {
             this.walkToCenter(delta);
-            this.updateAnimation();
-            this.updateOrganPosition();
         }
+        this.updateAnimation();
+        this.updateOrganPosition();
         this.depth = this.y + this.height;
     }
 

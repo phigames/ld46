@@ -7,19 +7,24 @@ export class Grinder extends Phaser.GameObjects.Sprite {
     readonly doctorPosition: Phaser.Geom.Point;
     private origX: number;
     private origY: number;
+    private onOrganClick: (organ: Organ) => void;
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
+    constructor(scene: Phaser.Scene, x: number, y: number, onOrganClick: (organ: Organ) => void) {
         super(scene, 0, 0, 'grinder_front');
+        this.onOrganClick = onOrganClick;
         this.x = this.origX = x;
         this.y = this.origY = y;
         this.depth = this.y + this.height;
-        this.doctorPosition = new Phaser.Geom.Point(this.x - 40, this.y);
+        this.doctorPosition = new Phaser.Geom.Point(this.x - 50, this.y);
         this.setInteractive();
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);
         this.on('pointerout', () => this.alpha = 1);
     }
 
     grind(doctor: Doctor) {
+        this.off('pointerover');
+        this.off('pointerout');
+        this.alpha = 1;
         // move doctor in
         this.scene.tweens.add({
             targets: doctor,
@@ -50,19 +55,25 @@ export class Grinder extends Phaser.GameObjects.Sprite {
                     organs.push(new Organ(this.scene, 'cranium'));
                     organs.push(new Organ(this.scene, 'nephro'));
                 }
+                let anyTween: Phaser.Tweens.Tween;
                 for (let organ of organs) {
                     organ.x = this.x;
                     organ.y = this.y;
                     this.scene.add.existing(organ);
-                    this.scene.tweens.add({
+                    anyTween = this.scene.tweens.add({
                         targets: organ,
                         x: this.x + 50 + Math.random() * 50,
                         y: this.y + Math.random() * 50 - 25,
                         duration: 500,
                         delay: 1000,
                         ease: 'Quad.easeOut'
-                    })
+                    });
+                    organ.on('pointerdown', () => this.onOrganClick(organ));
                 }
+                anyTween.on('complete', () => {
+                    this.on('pointerover', () => this.alpha = HOVER_OPACITY);
+                    this.on('pointerout', () => this.alpha = 1);
+                });
             }
         });
     }

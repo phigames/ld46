@@ -26,6 +26,17 @@ export class Patient extends Phaser.GameObjects.Container {
         this.scene.events.on('update', this.update.bind(this));
     }
 
+    private die() {
+        this.scene.tweens.add({
+            targets: this,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => {
+                this.scene.children.remove(this);
+            }
+        });
+    }
+
     update(time: number, delta: number) {
         if (uglySettings.updatesPaused) {
             return;
@@ -36,11 +47,19 @@ export class Patient extends Phaser.GameObjects.Container {
             this.nextProblemTime = 10000;
         }
         
+        let dead = true;
         for (let organType of ORGAN_TYPES) {
             if (this.organs[organType] !== null) {
                 this.organs[organType].update(time, delta);
+                if (!this.organs[organType].isDead()) {
+                    dead = false;
+                }
             }
         }
+        if (dead) {
+            this.die();
+        }
+
     }
 
     private nextProblem() {

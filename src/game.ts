@@ -4,30 +4,30 @@ import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
-import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT } from './global';
+import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL } from './global';
 import { Grinder } from './grinder';
-
-
-export const FONT_FAMILY = 'akhbar';
-export const DARK_COLOR = '#28221f';
 
 
 export class Level extends Phaser.Scene {
 
+    beds: Bed[];
     currentDoc: Doctor;
     currentBed: Bed;
     trashcanLeft: TrashCan;
     trashcanRight: TrashCan;
     grinder: Grinder;
     timeToSpawnDoctor: number;
+    timeToSpawnPatient: number;
 
     invalidSound: Phaser.Sound.BaseSound;
     selectSound: Phaser.Sound.BaseSound;
 
     constructor() {
         super('level');
+        this.beds = [];
         this.currentDoc = null;
         this.timeToSpawnDoctor = 1000;
+        this.timeToSpawnPatient = 0;
     }
 
     loadImage(name: string) {
@@ -60,9 +60,10 @@ export class Level extends Phaser.Scene {
         for (let i = 0; i < 7; i++) {
             let bed = new Bed(this, i, this.onOrganClick.bind(this));
             this.add.existing(bed);
-            bed.generatePatient(0);
             bed.on('pointerdown', () => this.onBedClick(bed));
+            this.beds.push(bed);
         }
+        this.spawnPatient();
 
         this.trashcanLeft = new TrashCan(this, 30, GAME_HEIGHT - 30);
         this.add.existing(this.trashcanLeft);
@@ -71,7 +72,7 @@ export class Level extends Phaser.Scene {
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 
-        this.grinder = new Grinder(this, GAME_WIDTH / 2, GAME_HEIGHT - 50);
+        this.grinder = new Grinder(this, GAME_WIDTH / 2, GAME_HEIGHT - 50, this.onFreeOrganClick.bind(this));
         this.add.existing(this.grinder);
         this.grinder.on('pointerdown', () => this.onGrinderClick(this.grinder));
 
@@ -110,12 +111,29 @@ export class Level extends Phaser.Scene {
             this.spawnDoctor();
             this.timeToSpawnDoctor = DOCTOR_SPAWN_INTERVAL;
         }
+
+        this.timeToSpawnPatient -= delta;
+        if (this.timeToSpawnPatient <= 0) {
+            this.spawnPatient();
+            this.timeToSpawnPatient = PATIENT_SPAWN_INTERVAL;
+        }
     }
 
     private spawnDoctor() {
         let doc = new Doctor(this);
         doc.on('pointerdown', () => this.onDoctorClick(doc));
         this.add.existing(doc);
+    }
+
+    private spawnPatient() {
+        let bedIndices = [2, 5, 3, 0, 6, 1, 4];
+        for (let bedIndex of bedIndices) {
+            let bed = this.beds[bedIndex];
+            if (bed.patient === null) {
+                bed.generatePatient(0);
+                break;
+            }
+        }
     }
 
     popup(message: string) {
@@ -152,7 +170,7 @@ export class Level extends Phaser.Scene {
             if (this.currentDoc.isReadyToRemove()) {
                 this.currentDoc.setRemoveTarget(patient, organ.getType());
             } else if (this.currentDoc.isReadyToRemove()) {
-                this.currentDoc.setInsertTarget(patient);
+                this.currentDoc.setTarget(patient);
             }
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
@@ -167,7 +185,7 @@ export class Level extends Phaser.Scene {
             return;
         }
         if (this.currentDoc !== null && this.currentDoc.isReadyToInsert() && bed.canBeInserted(this.currentDoc.organ)) {
-            this.currentDoc.setInsertTarget(bed.patient);
+            this.currentDoc.setTarget(bed.patient);
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
             this.selectSound.play();
@@ -181,7 +199,7 @@ export class Level extends Phaser.Scene {
             return;
         }
         if (this.currentDoc !== null && this.currentDoc.isReadyToInsert()) {
-            this.currentDoc.setInsertTarget(trashcan);
+            this.currentDoc.setTarget(trashcan);
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
             this.selectSound.play();
@@ -195,7 +213,23 @@ export class Level extends Phaser.Scene {
             return;
         }
         if (this.currentDoc !== null && (this.currentDoc.isReadyToRemove() || this.currentDoc.isReadyToInsert())) {
-            this.currentDoc.setInsertTarget(grinder);
+            this.currentDoc.setTarget(grinder);
+            this.currentDoc.setSelected(false);
+            this.currentDoc = null;
+            this.selectSound.play();
+        } else {
+            this.invalidSound.play();
+        }
+    }
+
+    onFreeOrganClick(organ: Organ) {
+        console.log('free organ click');
+        
+        if (uglySettings.updatesPaused) {
+            return;
+        }
+        if (this.currentDoc !== null && this.currentDoc.isReadyToRemove() && !organ.owned) {
+            this.currentDoc.setTarget(organ);
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
             this.selectSound.play();

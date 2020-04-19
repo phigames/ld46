@@ -39,6 +39,9 @@ export class Bed extends Phaser.GameObjects.Container {
     }
 
     canBeInserted(organ: Organ): boolean {
+        if (this.patient === null) {
+            return false;
+        }
         return this.patient.organs[organ.getType()] === null;
     }
 
