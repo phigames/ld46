@@ -1,6 +1,6 @@
 import 'phaser';
 import { Patient } from './patient';
-import { Organ } from './organ';
+import { Organ, ORGAN_TYPES } from './organ';
 import { HOVER_OPACITY } from './global';
 
 
@@ -23,11 +23,18 @@ export class Bed extends Phaser.GameObjects.Container {
         this.onOrganClick = onOrganClick;
         this.x = 52 + slot * SPACING;
         this.y = YPOS;
-        this.depth = this.y + this.height;
+        this.depth = this.y + this.height / 2;
         this.createSprite();
         this.setInteractive();
         this.on('pointerover', () => this.sprite.alpha = this.infoBoard.alpha = HOVER_OPACITY);
         this.on('pointerout', () => this.sprite.alpha = this.infoBoard.alpha = 1);
+        this.scene.events.on('update', this.updatePatient.bind(this));
+    }
+
+    private updatePatient(time: number, delta: number) {
+        if (this.patient !== null) {
+            this.patient.update(time, delta);
+        }
     }
 
     protected createSprite() {
@@ -36,6 +43,28 @@ export class Bed extends Phaser.GameObjects.Container {
         this.infoBoard = this.scene.add.image(0, -25, 'infoboard');
         this.add(this.infoBoard);
         this.setSize(50, 112);
+    }
+
+    onPatientDied() {
+        let oldPatient = this.patient;
+        let oldSprite = this.sprite;
+        this.createSprite();
+        this.sprite.alpha = 0;
+        this.scene.tweens.add({
+            targets: oldSprite,
+            alpha: 0,
+            duration: 1000,
+            onComplete: () => {
+                oldPatient.destroy();
+                oldSprite.destroy();
+            }
+        });
+        this.scene.tweens.add({
+            targets: this.sprite,
+            alpha: 1,
+            duration: 1000
+        });
+        this.patient = null;
     }
 
     canBeInserted(organ: Organ): boolean {

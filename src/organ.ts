@@ -20,7 +20,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private timeToDecay: number;
     private dead: boolean;
     owned: boolean;
-    private countdownText: Phaser.GameObjects.Text;
+    readonly countdownText: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed = null) {
         let offset = OFFSET[organType];
@@ -38,6 +38,9 @@ export class Organ extends Phaser.GameObjects.Sprite {
             this.on('pointerover', () => this.alpha = HOVER_OPACITY);
             this.on('pointerout', () => this.alpha = 1);
         }
+        this.on('destroy', () => {
+            this.countdownText.destroy();
+        });
     }
 
     get doctorPosition(): Phaser.Geom.Point {
@@ -92,7 +95,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
                 this.dead = true;
                 this.setTint(0x3a5941);
                 this.timeToDecay = null;
-                this.countdownText.setText('xxx');
+                this.countdownText.setText('---');
             } else {
                 // green: 0x3a5941
                 let progress = 0.6 * this.timeToDecay / this.originalTimeToDecay;

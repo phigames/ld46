@@ -21,18 +21,13 @@ export class Patient extends Phaser.GameObjects.Container {
         };
 
         this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
-        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 55);
-
-        this.scene.events.on('update', this.update.bind(this));
-    }
-
-    private die() {
-        this.scene.tweens.add({
-            targets: this,
-            alpha: 0,
-            duration: 1000,
-            onComplete: () => {
-                this.scene.children.remove(this);
+        this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
+        this.on('destroy', () => {
+            for (let organType of ORGAN_TYPES) {
+                if (this.organs[organType] !== null) {
+                    this.organs[organType].destroy()
+                    this.organs[organType] = null;
+                }
             }
         });
     }
@@ -57,7 +52,7 @@ export class Patient extends Phaser.GameObjects.Container {
             }
         }
         if (dead) {
-            this.die();
+            this.bed.onPatientDied();
         }
 
     }
