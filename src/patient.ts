@@ -64,7 +64,7 @@ export class Patient extends Phaser.GameObjects.Container {
         }
     }
 
-    popOrgan(type: string): Organ {
+    popOrgan(type: OrganType): Organ {
         if (this.organs[type] !== null) {
             let organ: Organ = this.organs[type];
             organ.removeFromBed(this.bed);
