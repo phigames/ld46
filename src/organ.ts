@@ -21,6 +21,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private dead: boolean;
     owned: boolean;
     readonly countdownText: Phaser.GameObjects.Text;
+    private beepSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed = null) {
         let offset = OFFSET[organType];
@@ -31,6 +32,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.dead = false;
         this.owned = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        this.beepSound = this.scene.sound.add('beep');
         this.setInteractive();
         if (bed !== null) {
             this.addToBed(bed);
@@ -89,13 +91,26 @@ export class Organ extends Phaser.GameObjects.Sprite {
             return;
         }
         if (this.timeToDecay !== null) {
-            this.countdownText.setText(this.getCountdown());
             this.timeToDecay -= delta;
+            this.countdownText.setText(this.getCountdown());
+            if (this.timeToDecay < 5000) {
+                if (this.timeToDecay % 500 > 250) {
+                    this.countdownText.setColor('#ff0000');
+                } else {
+                    this.countdownText.setColor('#000000');
+                }
+                if (!this.beepSound.isPlaying) {
+                    this.beepSound.play({
+                        loop: true
+                    });
+                }
+            }
             if (this.timeToDecay <= 0) {
                 this.dead = true;
                 this.setTint(0x3a5941);
                 this.timeToDecay = null;
                 this.countdownText.setText('---');
+                this.beepSound.stop();
             } else {
                 // green: 0x3a5941
                 let progress = 0.6 * this.timeToDecay / this.originalTimeToDecay;

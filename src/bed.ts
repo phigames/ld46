@@ -7,7 +7,7 @@ import { HOVER_OPACITY } from './global';
 const WIDTH = 50;
 const HEIGHT = 50;
 const SPACING = 60;
-const YPOS = 75;
+const YPOS = 65;
 
 
 export class Bed extends Phaser.GameObjects.Container {

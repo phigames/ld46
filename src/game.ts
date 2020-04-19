@@ -21,6 +21,7 @@ export class Level extends Phaser.Scene {
 
     invalidSound: Phaser.Sound.BaseSound;
     selectSound: Phaser.Sound.BaseSound;
+    popupSound: Phaser.Sound.BaseSound;
 
     constructor() {
         super('level');
@@ -43,6 +44,7 @@ export class Level extends Phaser.Scene {
     }
 
     preload() {
+        this.loadImage('background');
         this.loadImage('infoboard');
         this.loadImage('organ_cranium');
         this.loadImage('organ_liver');
@@ -52,11 +54,20 @@ export class Level extends Phaser.Scene {
         this.loadImage('grinder_front');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor', 50, 50);
+
         this.loadAudio('invalid');
         this.loadAudio('select');
+        this.loadAudio('popup');
+        this.loadAudio('extract_organ');
+        this.loadAudio('problem');
+        this.loadAudio('beep');
+        this.loadAudio('pit');
+        this.loadAudio('endscreen');
     }
 
     create() {
+        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+
         for (let i = 0; i < 7; i++) {
             let bed = new Bed(this, i, this.onOrganClick.bind(this));
             this.add.existing(bed);
@@ -144,6 +155,7 @@ export class Level extends Phaser.Scene {
             uglySettings.updatesPaused = false;
             popup.off('click');
         });
+
     }
 
     onDoctorClick(doctor: Doctor) {

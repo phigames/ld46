@@ -5,9 +5,10 @@ export var uglySettings = {
 // parameters
 export const DOCTOR_SPEED = 0.05;
 export const DOCTOR_SPAWN_INTERVAL = 10000;
-export const PATIENT_SPAWN_INTERVAL = 5000;
-export const MIN_PROBLEM_INTERVAL = 5000;
-export const MAX_PROBLEM_INTERVAL = 20000;
+export const PATIENT_SPAWN_INTERVAL = 10000;
+export const MIN_PROBLEM_INTERVAL = 10000;
+export const MAX_PROBLEM_INTERVAL = 60000;
+export const ORGAN_TIME_TO_DECAY = 30000;
 
 // visuals
 export const GAME_WIDTH = 464;
