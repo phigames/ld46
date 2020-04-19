@@ -13,7 +13,7 @@ export class Bed extends Phaser.GameObjects.Container {
 
     patient: Patient;
     protected sprite: Phaser.GameObjects.Sprite;
-    private onOrganClick: (patient: Patient, organ: Organ) => void;
+    readonly onOrganClick: (patient: Patient, organ: Organ) => void;
 
     constructor(scene: Phaser.Scene, slot: number, onOrganClick: (patient: Patient, organ: Organ) => void) {
         super(scene, WIDTH, HEIGHT);
@@ -22,6 +22,7 @@ export class Bed extends Phaser.GameObjects.Container {
         this.x = 50 + slot * SPACING;
         this.y = YPOS;
         this.createSprite();
+        this.setInteractive();
     }
 
     protected createSprite() {
@@ -29,11 +30,16 @@ export class Bed extends Phaser.GameObjects.Container {
         this.add(this.sprite);
         let infoField = this.scene.add.image(0, -50, 'info_field');
         this.add(infoField);
+        this.setSize(50, 50);
+    }
+
+    canBeInserted(organ: Organ): boolean {
+        return this.patient.organs[organ.getType()] === null;
     }
 
     generatePatient(difficulty: number) {
         this.patient = new Patient(this.scene, this);
-        this.patient.addOrganClickListeners(this.onOrganClick);
+        this.patient.addOrganClickListeners();
         this.sprite.setFrame(1);
     }
 
