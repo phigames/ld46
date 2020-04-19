@@ -38,9 +38,10 @@ export default class Level extends Phaser.Scene {
         this.loadImage('info_field');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor_frames', 50, 50);
-        this.loadImage('organ_cranium')
-        this.loadImage('organ_liver')
-        this.loadImage('organ_nephro')
+        this.loadImage('organ_cranium');
+        this.loadImage('organ_liver');
+        this.loadImage('organ_nephro_left');
+        this.loadImage('organ_nephro_right');
     }
 
 
@@ -49,53 +50,71 @@ export default class Level extends Phaser.Scene {
             let bed = new Bed(this, i, this.onOrganClick.bind(this));
             this.add.existing(bed);
             bed.generatePatient(0);
+            bed.on('pointerdown', () => this.onBedClick(bed));
         }
         let doc = new Doctor(this);
-        doc.on('pointerdown', this.onDoctorClick.bind(this));
+        doc.on('pointerdown', () => this.onDoctorClick(doc));
         this.add.existing(doc);
         this.trashcan = new TrashCan(this);
         this.add.existing(this.trashcan);
         this.trashcan.on('pointerdown', this.onTrashcanClick.bind(this));
-        this.add.text(40, 150, ['Lorem ipsum dolor sit amet.', 'Blabliblubb und Zötteli dra'], { fontFamily: FONT_FAMILY });
 
         this.anims.create({
-            key: 'walk_with',
-            frames: this.anims.generateFrameNumbers('doctor_frames', { start: 3, end: 5 }),
-            frameRate: 10,
-            repeat: 20
+            key: 'wait_without',
+            frames: [ { key: 'doctor_frames', frame: 0 } ],
+            frameRate: 7,
+            repeat: -1
         });
-
         this.anims.create({
             key: 'walk_without',
-            frames: this.anims.generateFrameNumbers('doctor_frames', { start: 0, end: 2 }),
-            frameRate: 10,
-            repeat: 20
+            frames: [ { key: 'doctor_frames', frame: 1 }, { key: 'doctor_frames', frame: 0 }, { key: 'doctor_frames', frame: 2 }, { key: 'doctor_frames', frame: 0 } ],
+            frameRate: 7,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'wait_with',
+            frames: [ { key: 'doctor_frames', frame: 3 } ],
+            frameRate: 7,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'walk_with',
+            frames: [ { key: 'doctor_frames', frame: 4 }, { key: 'doctor_frames', frame: 3 }, { key: 'doctor_frames', frame: 5 }, { key: 'doctor_frames', frame: 3 } ],
+            frameRate: 7,
+            repeat: -1
         });
     }
 
     onDoctorClick(doctor: Doctor) {
-        console.log("clicked a doc")
-        this.currentDoc = doctor
+        this.currentDoc = doctor;
     }
 
     onOrganClick(patient: Patient, organ: Organ) {
+        console.log(patient);
+        
         if (this.currentDoc !== null) {
-            if (organ !== null && this.currentDoc.organ === null) {
-                console.log(this.currentDoc);
-                
-                this.currentDoc.setTarget(patient);
-                this.currentDoc.setTask('remove', organ.getType());
-            } else if (organ === null && this.currentDoc.organ !== null) {
-                this.currentDoc.setTarget(patient);
-                this.currentDoc.setTask('insert', organ.getType());
+            if (this.currentDoc.isReadyToRemove()) {
+                this.currentDoc.setRemoveTarget(patient, organ.getType());
+            } else if (this.currentDoc.isReadyToRemove()) {
+                this.currentDoc.setInsertTarget(patient);
             }
-            this.currentDoc = null
+            this.currentDoc = null;
+        }
+    }
+
+    onBedClick(bed: Bed) {
+        if (this.currentDoc !== null) {
+            if (this.currentDoc.isReadyToInsert() && bed.canBeInserted(this.currentDoc.organ)) {
+                this.currentDoc.setInsertTarget(bed.patient);
+            }
+            this.currentDoc = null;
         }
     }
 
     onTrashcanClick() {
-        if (this.currentDoc != null) {
-            this.currentDoc.setTarget(this.trashcan);
+        if (this.currentDoc !== null && this.currentDoc.isReadyToInsert()) {
+            this.currentDoc.setInsertTarget(this.trashcan);
+            this.currentDoc = null;
         }
     }
 

@@ -7,9 +7,9 @@ export type OrganType = 'cranium' | 'liver' | 'nephro';
 export const ORGAN_TYPES: OrganType[] = ['cranium', 'liver', 'nephro'];
 
 const OFFSET: Record<OrganType, Phaser.Geom.Point> = {
-    cranium: new Phaser.Geom.Point(-15, -65),
-    liver: new Phaser.Geom.Point(-15, -50),
-    nephro: new Phaser.Geom.Point(-15, -35)
+    cranium: new Phaser.Geom.Point(-14, -70),
+    liver: new Phaser.Geom.Point(-14, -51),
+    nephro: new Phaser.Geom.Point(-14, -34)
 }
 
 
@@ -25,13 +25,24 @@ export class Organ extends Phaser.GameObjects.Sprite {
         let offset = OFFSET[organType];
         super(scene, offset.x, offset.y, 'organ_' + organType);
         this.scene.add.existing(this);
-        bed.add(this);
         this.organType = organType;
         this.timeToDecay = null;
         this.dead = false;
-        this.countdownText = scene.add.text(offset.x + 15, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
-        bed.add(this.countdownText);
+        this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.setInteractive();
+        this.addToBed(bed);
+    }
+
+    removeFromBed(bed: Bed) {
+        bed.remove(this);
+        bed.remove(this.countdownText);
+    }
+
+    addToBed(bed: Bed) {
+        bed.add(this);
+        bed.add(this.countdownText);
+        this.x = OFFSET[this.organType].x;
+        this.y = OFFSET[this.organType].y;
     }
 
     getType(): OrganType {

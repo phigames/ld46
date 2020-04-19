@@ -2,7 +2,7 @@ import { Organ } from './organ';
 
 export class TrashCan extends Phaser.GameObjects.Sprite {
 
-    doctorPosition: Phaser.Geom.Point;
+    readonly doctorPosition: Phaser.Geom.Point;
 
     constructor(scene: Phaser.Scene) {
         super(scene, 0, 0, 'bed');
