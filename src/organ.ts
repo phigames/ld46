@@ -22,7 +22,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private dead: boolean;
     private countdownText: Phaser.GameObjects.Text;
 
-    constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed) {
+    constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed = null) {
         let offset = OFFSET[organType];
         super(scene, offset.x, offset.y, 'organ_' + organType);
         this.scene.add.existing(this);
@@ -31,7 +31,9 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.dead = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.setInteractive();
-        this.addToBed(bed);
+        if (bed !== null) {
+            this.addToBed(bed);
+        }
     }
 
     removeFromBed(bed: Bed) {

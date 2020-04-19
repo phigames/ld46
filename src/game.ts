@@ -5,6 +5,7 @@ import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
 import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT } from './global';
+import { Grinder } from './grinder';
 
 
 export const FONT_FAMILY = 'akhbar';
@@ -17,6 +18,7 @@ export class Level extends Phaser.Scene {
     currentBed: Bed;
     trashcanLeft: TrashCan;
     trashcanRight: TrashCan;
+    grinder: Grinder;
     timeToSpawnDoctor: number;
 
     invalidSound: Phaser.Sound.BaseSound;
@@ -45,6 +47,9 @@ export class Level extends Phaser.Scene {
         this.loadImage('organ_cranium');
         this.loadImage('organ_liver');
         this.loadImage('organ_nephro');
+        this.loadImage('pit');
+        this.loadImage('grinder_back');
+        this.loadImage('grinder_front');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor', 50, 50);
         this.loadAudio('invalid');
@@ -58,12 +63,17 @@ export class Level extends Phaser.Scene {
             bed.generatePatient(0);
             bed.on('pointerdown', () => this.onBedClick(bed));
         }
+
         this.trashcanLeft = new TrashCan(this, 30, GAME_HEIGHT - 30);
         this.add.existing(this.trashcanLeft);
         this.trashcanLeft.on('pointerdown', () => this.onTrashcanClick(this.trashcanLeft));
         this.trashcanRight = new TrashCan(this, GAME_WIDTH - 30, GAME_HEIGHT - 30);
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
+
+        this.grinder = new Grinder(this, GAME_WIDTH / 2, GAME_HEIGHT - 50);
+        this.add.existing(this.grinder);
+        this.grinder.on('pointerdown', () => this.onGrinderClick(this.grinder));
 
         this.anims.create({
             key: 'wait_without',
@@ -172,6 +182,20 @@ export class Level extends Phaser.Scene {
         }
         if (this.currentDoc !== null && this.currentDoc.isReadyToInsert()) {
             this.currentDoc.setInsertTarget(trashcan);
+            this.currentDoc.setSelected(false);
+            this.currentDoc = null;
+            this.selectSound.play();
+        } else {
+            this.invalidSound.play();
+        }
+    }
+
+    onGrinderClick(grinder: Grinder) {
+        if (uglySettings.updatesPaused) {
+            return;
+        }
+        if (this.currentDoc !== null && (this.currentDoc.isReadyToRemove() || this.currentDoc.isReadyToInsert())) {
+            this.currentDoc.setInsertTarget(grinder);
             this.currentDoc.setSelected(false);
             this.currentDoc = null;
             this.selectSound.play();

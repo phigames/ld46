@@ -6,7 +6,7 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
     readonly doctorPosition: Phaser.Geom.Point;
 
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, 0, 0, 'bed');
+        super(scene, 0, 0, 'pit');
         this.x = x;
         this.y = y;
         this.depth = this.y + this.height;

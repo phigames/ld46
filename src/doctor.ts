@@ -3,13 +3,13 @@ import { Organ, OrganType } from './organ';
 import { TrashCan } from './trashcan';
 import { Patient } from './patient';
 import { uglySettings, HOVER_OPACITY, SELECT_OPACITY } from './global';
+import { Grinder } from './grinder';
 
 
 const SPEED = 0.05;
 
 
 type MoveMode = 'start' | 'walk-to-x' | 'walk-to-y' | 'return';
-type TaskMode = 'insert' | 'remove';
 
 
 export class Doctor extends Phaser.GameObjects.Container {
@@ -17,7 +17,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     static yLane = 200
 
     organ: Organ;
-    private target: Patient | TrashCan;
+    private target: Patient | TrashCan | Grinder;
     private moveMode: MoveMode;
     private removeOrganType: OrganType;
     private centerLane: number;
@@ -69,7 +69,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.removeOrganType = organType;
     }
 
-    setInsertTarget(target: Patient | TrashCan) {
+    setInsertTarget(target: Patient | TrashCan | Grinder) {
         this.target = target;
         this.moveMode = 'walk-to-x';
     }
@@ -181,19 +181,25 @@ export class Doctor extends Phaser.GameObjects.Container {
         } else if (this.target !== null) {
             if (this.walkToTarget(delta)) {
                 // arrived at target
-                if (this.organ === null) {
-                    this.organ = this.target.popOrgan(this.removeOrganType);
-                    if (this.organ !== null) {
-                        this.add(this.organ);
+                if (this.target instanceof Patient || this.target instanceof TrashCan) {
+                    if (this.organ === null) {
+                        this.organ = this.target.popOrgan(this.removeOrganType);
+                        if (this.organ !== null) {
+                            this.add(this.organ);
+                        }
+                    } else if (this.organ !== null) {
+                        if (this.target.setOrgan(this.organ)) {
+                            this.remove(this.organ);
+                            this.organ = null;
+                        }
                     }
-                } else if (this.organ !== null) {
-                    if (this.target.setOrgan(this.organ)) {
-                        this.remove(this.organ);
-                        this.organ = null;
-                    }
+                    this.target = null;
+                    this.moveMode = 'return';
+                } else if (this.target instanceof Grinder) {
+                    this.sprite.anims.stop();
+                    this.sprite.setFrame(12);
+                    this.target.grind(this);
                 }
-                this.target = null;
-                this.moveMode = 'return';
             }
             this.updateAnimation();
             this.updateOrganPosition();
