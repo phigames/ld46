@@ -24,6 +24,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     private startX: number;
     protected sprite: Phaser.GameObjects.Sprite
     private selected: boolean;
+    private dead: boolean;
 
     constructor(scene: Phaser.Scene) {
         super(scene);
@@ -34,6 +35,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.centerLane = Phaser.Math.Between(130, 180);
         this.startX = Phaser.Math.Between(30, 100);
         this.selected = false;
+        this.dead = false;
         this.setX(-50);
         this.setY(this.centerLane);
         this.createSprite();
@@ -43,6 +45,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);
         this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
         this.on('destroy', () => {
+            this.sprite.destroy();
             if (this.organ !== null) {
                 this.organ.destroy();
             }
@@ -188,6 +191,9 @@ export class Doctor extends Phaser.GameObjects.Container {
         if (uglySettings.updatesPaused) {
             return;
         }
+        if (this.dead) {
+            return;
+        }
         if (this.moveMode == 'start') {
             this.walkToStart(delta);
         } else if (this.target !== null) {
@@ -209,6 +215,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.moveMode = 'return';
                 } else if (this.target instanceof Grinder) {
                     this.target.grind(this);
+                    this.dead = true;
                 } else if (this.target instanceof Organ) {
                     this.organ = this.target;
                     this.add(this.organ);
