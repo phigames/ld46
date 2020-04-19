@@ -28,8 +28,8 @@ export class Bed extends Phaser.GameObjects.Container {
     protected createSprite() {
         this.sprite = this.scene.add.sprite(0, 0, 'bed', 0);
         this.add(this.sprite);
-        let infoField = this.scene.add.image(0, -50, 'info_field');
-        this.add(infoField);
+        let infoBoard = this.scene.add.image(0, -50, 'infoboard');
+        this.add(infoBoard);
         this.setSize(50, 50);
     }
 

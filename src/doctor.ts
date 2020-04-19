@@ -25,7 +25,7 @@ export class Doctor extends Phaser.GameObjects.Container {
         this.target = null;
         this.moveMode = null;
         this.removeOrganType = null;
-        this.centerLane = Phaser.Math.Between(200, 250);
+        this.centerLane = Phaser.Math.Between(150, 200);
         this.setX(25);
         this.setY(this.centerLane);
         this.createSprite();
@@ -35,7 +35,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     protected createSprite() {
-        this.sprite = this.scene.add.sprite(0, 0, 'doctor_frames', 0);
+        this.sprite = this.scene.add.sprite(0, 0, 'doctor', 0);
         this.add(this.sprite);
         this.setSize(50, 50);
     }

@@ -32,16 +32,14 @@ export default class Level extends Phaser.Scene {
     }
 
     preload() {
+        this.loadImage('infoboard');
         this.loadImage('organ_cranium');
         this.loadImage('organ_liver');
         this.loadImage('organ_nephro');
-        this.loadImage('info_field');
+        // this.loadImage('organ_nephro_left');
+        // this.loadImage('organ_nephro_right');
         this.loadSpreadsheet('bed', 50, 50);
-        this.loadSpreadsheet('doctor_frames', 50, 50);
-        this.loadImage('organ_cranium');
-        this.loadImage('organ_liver');
-        this.loadImage('organ_nephro_left');
-        this.loadImage('organ_nephro_right');
+        this.loadSpreadsheet('doctor', 50, 50);
     }
 
 
@@ -61,26 +59,26 @@ export default class Level extends Phaser.Scene {
 
         this.anims.create({
             key: 'wait_without',
-            frames: [ { key: 'doctor_frames', frame: 0 } ],
-            frameRate: 7,
+            frames: [ { key: 'doctor', frame: 0 } ],
+            frameRate: 20,
             repeat: -1
         });
         this.anims.create({
             key: 'walk_without',
-            frames: [ { key: 'doctor_frames', frame: 1 }, { key: 'doctor_frames', frame: 0 }, { key: 'doctor_frames', frame: 2 }, { key: 'doctor_frames', frame: 0 } ],
-            frameRate: 7,
+            frames: this.anims.generateFrameNumbers('doctor', { start: 0, end: 11 }),
+            frameRate: 20,
             repeat: -1
         });
         this.anims.create({
             key: 'wait_with',
-            frames: [ { key: 'doctor_frames', frame: 3 } ],
-            frameRate: 7,
+            frames: [ { key: 'doctor', frame: 12 } ],
+            frameRate: 20,
             repeat: -1
         });
         this.anims.create({
             key: 'walk_with',
-            frames: [ { key: 'doctor_frames', frame: 4 }, { key: 'doctor_frames', frame: 3 }, { key: 'doctor_frames', frame: 5 }, { key: 'doctor_frames', frame: 3 } ],
-            frameRate: 7,
+            frames: this.anims.generateFrameNumbers('doctor', { start: 12, end: 23 }),
+            frameRate: 20,
             repeat: -1
         });
     }
