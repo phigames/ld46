@@ -19,18 +19,35 @@ export class Doctor extends Phaser.GameObjects.Container {
     attarget: boolean;
     task: Task;
     centerLane: number;
+    protected sprite: Phaser.GameObjects.Sprite
 
     constructor(scene: Phaser.Scene) {
         super(scene);
         this.organ = null;
         this.target = null;
         this.attarget = false;
-        this.task = {operation: null, organ: null}
-        this.centerLane = Phaser.Math.Between(200, 250)
+        this.task = {operation: null, organ: null};
+        this.centerLane = Phaser.Math.Between(200, 250);
         this.setX(25);
         this.setY(this.centerLane);
+        this.createSprite();
+        this.setInteractive();
 
         this.scene.events.on('update', this.update.bind(this));
+    }
+
+    protected createSprite() {
+        this.sprite = this.scene.add.sprite(0, 0, 'doctor_frames', 0);
+        this.add(this.sprite);
+        this.scene.anims.play('walk_without', this);
+        let infoField = this.scene.add.image(0, -50, 'organ_cranium');
+        this.add(infoField);
+        this.setSize(50, 50);
+        this.sprite.anims.play
+    }
+
+    protected addOrgansprite() {
+        let organ
     }
 
     setTarget(target: Patient | TrashCan) {
@@ -77,6 +94,8 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     update(time: number, delta: number) {
+        this.sprite.play('walk_with', true);
+        this.sprite.flipX = true;
         if (this.y > this.centerLane) {
             this.y = this.centerLane; // go back to your lane man!
         }

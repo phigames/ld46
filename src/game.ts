@@ -3,7 +3,8 @@ import { Bed } from './bed';
 import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
-import { OrganType } from './organ';
+import { OrganType, Organ } from './organ';
+
 
 
 export const FONT_FAMILY = 'akhbar';
@@ -37,7 +38,11 @@ export default class Level extends Phaser.Scene {
         this.loadImage('info_field');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor_frames', 50, 50);
+        this.loadImage('organ_cranium')
+        this.loadImage('organ_liver')
+        this.loadImage('organ_nephro')
     }
+
 
     create() {
         for (let i = 0; i < 5; i++) {
@@ -46,25 +51,43 @@ export default class Level extends Phaser.Scene {
             bed.generatePatient(0);
         }
         let doc = new Doctor(this);
+        doc.on('pointerdown', this.onDoctorClick.bind(this));
         this.add.existing(doc);
         this.trashcan = new TrashCan(this);
         this.add.existing(this.trashcan);
         this.trashcan.on('pointerdown', this.onTrashcanClick.bind(this));
         this.add.text(40, 150, ['Lorem ipsum dolor sit amet.', 'Blabliblubb und Zötteli dra'], { fontFamily: FONT_FAMILY });
+
+        this.anims.create({
+            key: 'walk_with',
+            frames: this.anims.generateFrameNumbers('doctor_frames', { start: 3, end: 5 }),
+            frameRate: 10,
+            repeat: 20
+        });
+
+        this.anims.create({
+            key: 'walk_without',
+            frames: this.anims.generateFrameNumbers('doctor_frames', { start: 0, end: 2 }),
+            frameRate: 10,
+            repeat: 20
+        });
     }
 
     onDoctorClick(doctor: Doctor) {
+        console.log("clicked a doc")
         this.currentDoc = doctor
     }
 
-    onOrganClick(patient: Patient, organType: OrganType) {
-        if (this.currentDoc != null) {
-            if (organType != null && this.currentDoc.organ == null) {
+    onOrganClick(patient: Patient, organ: Organ) {
+        if (this.currentDoc !== null) {
+            if (organ !== null && this.currentDoc.organ === null) {
+                console.log(this.currentDoc);
+                
                 this.currentDoc.setTarget(patient);
-                this.currentDoc.setTask('remove', organType);
-            } else if (organType == null && this.currentDoc.organ != null) {
+                this.currentDoc.setTask('remove', organ.getType());
+            } else if (organ === null && this.currentDoc.organ !== null) {
                 this.currentDoc.setTarget(patient);
-                this.currentDoc.setTask('insert', organType)
+                this.currentDoc.setTask('insert', organ.getType());
             }
             this.currentDoc = null
         }

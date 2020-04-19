@@ -15,23 +15,27 @@ const OFFSET: Record<OrganType, Phaser.Geom.Point> = {
 
 export class Organ extends Phaser.GameObjects.Sprite {
 
-    type: string;
+    private organType: OrganType;
     private originalTimeToDecay: number;
     private timeToDecay: number;
     private dead: boolean;
     private countdownText: Phaser.GameObjects.Text;
 
-    constructor(scene: Phaser.Scene, type: string, bed: Bed) {
-        let offset = OFFSET[type];
-        super(scene, offset.x, offset.y, 'organ_' + type);
+    constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed) {
+        let offset = OFFSET[organType];
+        super(scene, offset.x, offset.y, 'organ_' + organType);
         this.scene.add.existing(this);
         bed.add(this);
-        this.type = type;
+        this.organType = organType;
         this.timeToDecay = null;
         this.dead = false;
         this.countdownText = scene.add.text(offset.x + 15, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         bed.add(this.countdownText);
         this.setInteractive();
+    }
+
+    getType(): OrganType {
+        return this.organType;
     }
 
     startDecay(timeToDecay: number) {

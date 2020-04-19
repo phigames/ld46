@@ -5,7 +5,7 @@ import { Organ, OrganType, ORGAN_TYPES } from './organ';
 
 export class Patient extends Phaser.GameObjects.Container {
 
-    private organs: Record<OrganType, Organ>;
+    organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
     doctorPosition: Phaser.Geom.Point;
 
@@ -79,10 +79,10 @@ export class Patient extends Phaser.GameObjects.Container {
         return false;
     }
 
-    addOrganClickListeners(callback: (patient: Patient, organType: OrganType) => void) {
+    addOrganClickListeners(callback: (patient: Patient, organ: Organ) => void) {
         for (const organType of ORGAN_TYPES) {
             if (this.organs[organType] !== null) {
-                this.organs[organType].on('pointerdown', () => callback(this, organType));
+                this.organs[organType].on('pointerdown', () => callback(this, this.organs[organType]));
             }
         }
     }
