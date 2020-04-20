@@ -8,6 +8,19 @@ import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_S
 import { Grinder } from './grinder';
 
 
+function jumpIn(v: number): number {
+    let forward = 0.25;
+    let up = 1.5;
+    let b = (forward**2 - up) / (forward**2 + forward);
+    let a = 1 - b;
+    return a * v**2 + b * v;
+}
+
+function jumpOut(v: number): number {
+    return 1 - jumpIn(1 - v);
+}
+
+
 class TitleScreen extends Phaser.Scene {
 
     constructor() {
@@ -40,6 +53,7 @@ class EndScreen extends Phaser.Scene {
     
     preload() {
         this.load.image('endscreen', 'assets/titlescreen.png');
+        this.load.audio('endscreen', 'assets/endscreen.ogg');
     }
 
     create(data: object) {
@@ -51,12 +65,14 @@ class EndScreen extends Phaser.Scene {
             .setInteractive()
             .on('pointerdown', () => { /* TODO */ });
         this.add.text(50, 50, `${this.died}, ${this.sacrificed}`, { fontFamily: FONT_FAMILY, color: 0x28221f });
+
+        this.sound.play('endscreen');
     }
 
 }
 
 
-class Level extends Phaser.Scene {
+export class Level extends Phaser.Scene {
 
     beds: Bed[];
     selectedDoc: Doctor;
@@ -172,7 +188,7 @@ class Level extends Phaser.Scene {
             targets: [ this.grinder, this.grinder.back ],
             y: GAME_HEIGHT - 50,
             duration: 1000,
-            ease: 'Quad.Out',
+            ease: 'Quad.easeOut',
             delay: GRINDER_APPEAR_TIME,
             onComplete: () => {
                 this.hint(this.grinder.x - 100, this.grinder.y - 50, 'when organs run out, sacrifices must be made.', 5000);
@@ -235,6 +251,7 @@ class Level extends Phaser.Scene {
             }
             if (this.hoursOnClock == 20) {
                 // end of game
+                this.backgroundSound.stop();
                 this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed });
             }
         }
@@ -274,6 +291,45 @@ class Level extends Phaser.Scene {
             this.add.existing(organ);
             organ.on('pointerdown', () => this.onFreeOrganClick(organ));
         }
+    }
+
+    teleport(doctor: Doctor, trashcan: TrashCan) {
+        if (trashcan === this.trashcanLeft) {
+            this.teleportBetween(doctor, this.trashcanLeft, this.trashcanRight);
+        } else {
+            this.teleportBetween(doctor, this.trashcanRight, this.trashcanLeft);
+        }
+    }
+
+    private teleportBetween(doctor: Doctor, trashcan1: TrashCan, trashcan2: TrashCan) {
+        this.tweens.add({
+            targets: doctor,
+            x: trashcan1.x,
+            duration: 700
+        });
+        this.tweens.add({
+            targets: doctor,
+            y: trashcan1.y + 20,
+            // ease: (v: number) => Phaser.Math.Easing.Back.In(v, 10.0),
+            ease: jumpIn,
+            duration: 700,
+            onComplete: () => {
+                doctor.x = trashcan2.x;
+                this.tweens.add({
+                    targets: doctor,
+                    x: trashcan2.doctorPosition.x,
+                    duration: 700
+                });
+                this.tweens.add({
+                    targets: doctor,
+                    y: trashcan2.doctorPosition.y,
+                    // ease: (v: number) => Phaser.Math.Easing.Back.Out(v, 10.0),
+                    ease: jumpOut,
+                    duration: 700,
+                    onComplete: () => doctor.teleporting = false
+                });
+            }
+        });
     }
 
     popup(message: string) {
@@ -449,8 +505,8 @@ class Level extends Phaser.Scene {
                 this.selectedDoc.setTarget(trashcan);
                 this.selectSound.play();
             } else {
-                this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'that\'s not possible');
-                this.invalidSound.play();
+                this.selectedDoc.setTarget(trashcan);
+                this.selectSound.play();
             }
         } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
             if (this.selectedOrgan.patient !== null) {

@@ -4,6 +4,7 @@ import { TrashCan } from './trashcan';
 import { Patient } from './patient';
 import { uglySettings, HOVER_OPACITY, DOCTOR_SPEED } from './global';
 import { Grinder } from './grinder';
+import { Level } from './game';
 
 
 type MoveMode = 'start' | 'walk-to-x' | 'walk-to-y' | 'return';
@@ -22,6 +23,7 @@ export class Doctor extends Phaser.GameObjects.Container {
     protected sprite: Phaser.GameObjects.Sprite
     private selected: boolean;
     private dead: boolean;
+    teleporting: boolean;
     private nextTask;
 
     constructor(scene: Phaser.Scene) {
@@ -183,7 +185,10 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     private updateAnimation() {
-        if (this.moveMode === 'start') {
+        if (this.teleporting) {
+            this.sprite.anims.stop();
+            this.sprite.setFrame(12);
+        } else if (this.moveMode === 'start') {
             this.sprite.play('walk_without', true);
         } else if (this.moveMode === null && this.target instanceof Grinder) {
             this.sprite.anims.stop();
@@ -214,14 +219,19 @@ export class Doctor extends Phaser.GameObjects.Container {
                 // arrived at target
                 if (this.target instanceof Patient || this.target instanceof TrashCan) {
                     if (this.organ === null) {
-                        this.organ = this.target.popOrgan(this.removeOrganType);
-                        if (this.organ !== null) {
-                            // successful removal
-                            this.add(this.organ);
-                            this.organ.pickedUp = true;
-                        } else {
-                            // failed removal
-                            this.nextTask = null;
+                        if (this.target instanceof Patient) {
+                            this.organ = this.target.popOrgan(this.removeOrganType);
+                            if (this.organ !== null) {
+                                // successful removal
+                                this.add(this.organ);
+                                this.organ.pickedUp = true;
+                            } else {
+                                // failed removal
+                                this.nextTask = null;
+                            }
+                        } else if (this.target instanceof TrashCan) {
+                            this.teleporting = true;
+                            (<Level>this.scene).teleport(this, this.target);
                         }
                     } else if (this.organ !== null) {
                         if (this.target.setOrgan(this.organ)) {
