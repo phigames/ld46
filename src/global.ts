@@ -9,6 +9,8 @@ export const PATIENT_SPAWN_INTERVAL = 10000;
 export const MIN_PROBLEM_INTERVAL = 10000;
 export const MAX_PROBLEM_INTERVAL = 60000;
 export const ORGAN_TIME_TO_DECAY = 30000;
+export const GRINDER_APPEAR_TIME = 2000;
+export const INITIAL_ORGAN_NUMBER = 10;
 
 // visuals
 export const GAME_WIDTH = 464;
