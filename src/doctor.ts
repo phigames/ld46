@@ -46,7 +46,7 @@ export class Doctor extends Phaser.GameObjects.Container {
 
         this.scene.events.on('update', this.update.bind(this));
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);
-        this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
+        this.on('pointerout', () => this.alpha = 1);
         this.on('destroy', () => {
             this.sprite.destroy();
             if (this.organ !== null) {
@@ -63,7 +63,7 @@ export class Doctor extends Phaser.GameObjects.Container {
 
     setSelected(selected: boolean) {
         this.selected = selected;
-        this.alpha = selected ? SELECT_OPACITY : 1;
+        // this.alpha = selected ? SELECT_OPACITY : 1;
     }
 
     isReadyToRemove() {

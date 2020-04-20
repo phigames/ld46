@@ -6,7 +6,7 @@ import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO
 
 export class Patient extends Phaser.GameObjects.Container {
 
-    private bed: Bed;
+    bed: Bed;
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
     readonly doctorPosition: Phaser.Geom.Point;
@@ -14,7 +14,7 @@ export class Patient extends Phaser.GameObjects.Container {
     private extractOrganSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
-        super(scene, 100, 100);
+        super(scene);
         this.bed = bed;
         this.organs = {
             cranium: new Organ(this.scene, 'cranium', bed, this),

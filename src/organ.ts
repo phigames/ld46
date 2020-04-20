@@ -35,12 +35,13 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.selected = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.beepSound = this.scene.sound.add('beep');
+        this.tintFill = false;
         this.setInteractive();
         if (bed !== undefined) {
             this.addToBed(bed);
         } else {
             this.on('pointerover', () => this.alpha = HOVER_OPACITY);
-            this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
+            this.on('pointerout', () => this.alpha = 1);
         }
         if (patient !== undefined) {
             this.patient = patient;
@@ -59,7 +60,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
 
     setSelected(selected: boolean) {
         this.selected = selected;
-        this.alpha = selected ? SELECT_OPACITY : 1;
+        // this.alpha = selected ? SELECT_OPACITY : 1;
     }
 
     removeFromBed(bed: Bed) {
@@ -78,7 +79,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.x = OFFSET[this.organType].x;
         this.y = OFFSET[this.organType].y;
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);
-        this.on('pointerout', () => { if (!this.selected) this.alpha = 1; });
+        this.on('pointerout', () => this.alpha = 1);
     }
 
     getType(): OrganType {
