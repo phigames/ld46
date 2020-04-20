@@ -78,10 +78,10 @@ export class Level extends Phaser.Scene {
         }
         this.spawnPatient();
 
-        this.trashcanLeft = new TrashCan(this, 60, GAME_HEIGHT - 35);
+        this.trashcanLeft = new TrashCan(this, 57, GAME_HEIGHT - 34);
         this.add.existing(this.trashcanLeft);
         this.trashcanLeft.on('pointerdown', () => this.onTrashcanClick(this.trashcanLeft));
-        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 60, GAME_HEIGHT - 35);
+        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 58, GAME_HEIGHT - 34);
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 
