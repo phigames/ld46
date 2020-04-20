@@ -121,7 +121,6 @@ export class Organ extends Phaser.GameObjects.Sprite {
                     this.beepSound.play({
                         loop: true
                     });
-                    console.log(`${this.organType} playing beep`);
                 }
             }
             if (this.timeToDecay <= 0) {
@@ -130,7 +129,6 @@ export class Organ extends Phaser.GameObjects.Sprite {
                 this.timeToDecay = null;
                 this.countdownText.setText('---');
                 this.beepSound.stop();
-                console.log(`${this.organType} stopping beep`);
             } else {
                 // green: 0x3a5941
                 let progress = 0.6 * this.timeToDecay / this.originalTimeToDecay;

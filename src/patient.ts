@@ -1,7 +1,7 @@
 import 'phaser';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
-import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO_DECAY } from './global';
+import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO_DECAY, PATIENT_MISSING_ORGAN_PROB } from './global';
 
 
 export class Patient extends Phaser.GameObjects.Container {
@@ -14,14 +14,23 @@ export class Patient extends Phaser.GameObjects.Container {
     private extractOrganSound: Phaser.Sound.BaseSound;
     private insertOrganSound: Phaser.Sound.BaseSound;
 
-    constructor(scene: Phaser.Scene, bed: Bed) {
+    constructor(scene: Phaser.Scene, bed: Bed, missingOrganProb: number) {
         super(scene);
         this.bed = bed;
-        this.organs = {
-            cranium: new Organ(this.scene, 'cranium', bed, this),
-            liver: Math.random() < 0.5 ? null : new Organ(this.scene, 'liver', bed, this),
-            nephro: new Organ(this.scene, 'nephro', bed, this)
-        };
+        if (Math.random() < missingOrganProb) {
+            let missing = Phaser.Math.RND.integerInRange(1, 3);
+            this.organs = {
+                cranium: missing == 1 ? null : new Organ(this.scene, 'cranium', bed, this),
+                liver: missing == 2 ? null : new Organ(this.scene, 'liver', bed, this),
+                nephro: missing == 3 ? null : new Organ(this.scene, 'nephro', bed, this)
+            };
+        } else {
+            this.organs = {
+                cranium: new Organ(this.scene, 'cranium', bed, this),
+                liver: new Organ(this.scene, 'liver', bed, this),
+                nephro: new Organ(this.scene, 'nephro', bed, this)
+            };
+        }
         this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
         this.problemSound = this.scene.sound.add('problem');

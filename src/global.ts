@@ -4,12 +4,13 @@ export var uglySettings = {
 
 // parameters
 export const DOCTOR_SPEED = 0.05;
-export const DOCTOR_SPAWN_INTERVAL = 10000;
-export const PATIENT_SPAWN_INTERVAL = 10000;
+export const DOCTOR_SPAWN_INTERVAL = 30000;
+export const PATIENT_SPAWN_INTERVAL = 30000;
+export const PATIENT_MISSING_ORGAN_PROB = 0.5;
 export const MIN_PROBLEM_INTERVAL = 10000;
 export const MAX_PROBLEM_INTERVAL = 60000;
-export const ORGAN_TIME_TO_DECAY = 30000;
-export const GRINDER_APPEAR_TIME = 2000;
+export const ORGAN_TIME_TO_DECAY = 60000;
+export const GRINDER_APPEAR_TIME = 120000;
 export const INITIAL_ORGAN_NUMBER = 10;
 
 // visuals

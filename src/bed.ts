@@ -77,8 +77,8 @@ export class Bed extends Phaser.GameObjects.Container {
         return this.patient.organs[organ.getType()] === null;
     }
 
-    generatePatient(difficulty: number) {
-        this.patient = new Patient(this.scene, this);
+    generatePatient(missingOrganProb: number) {
+        this.patient = new Patient(this.scene, this, missingOrganProb);
         this.patient.addOrganClickListeners();
         this.sprite.setFrame(1);
         this.infoBoard.visible = true;

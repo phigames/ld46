@@ -4,7 +4,7 @@ import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
-import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY, GRINDER_APPEAR_TIME, INITIAL_ORGAN_NUMBER } from './global';
+import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY, GRINDER_APPEAR_TIME, INITIAL_ORGAN_NUMBER, PATIENT_MISSING_ORGAN_PROB } from './global';
 import { Grinder } from './grinder';
 
 
@@ -30,7 +30,7 @@ export class Level extends Phaser.Scene {
         this.beds = [];
         this.selectedDoc = null;
         this.selectedOrgan = null;
-        this.timeToSpawnDoctor = 1000;
+        this.timeToSpawnDoctor = 500;
         this.timeToSpawnPatient = 0;
     }
 
@@ -91,7 +91,7 @@ export class Level extends Phaser.Scene {
             bed.on('pointerdown', () => this.onBedClick(bed));
             this.beds.push(bed);
         }
-        this.spawnPatient();
+        this.spawnPatient(1);
         this.spawnOrgans(INITIAL_ORGAN_NUMBER);
 
         this.trashcanLeft = new TrashCan(this, 57, GAME_HEIGHT - 34);
@@ -159,7 +159,7 @@ export class Level extends Phaser.Scene {
 
         this.timeToSpawnPatient -= delta;
         if (this.timeToSpawnPatient <= 0) {
-            this.spawnPatient();
+            this.spawnPatient(PATIENT_MISSING_ORGAN_PROB);
             this.timeToSpawnPatient = PATIENT_SPAWN_INTERVAL;
         }
     }
@@ -170,12 +170,12 @@ export class Level extends Phaser.Scene {
         this.add.existing(doc);
     }
 
-    private spawnPatient() {
-        let bedIndices = [4, 1, 3, 0, 6, 2, 5];
+    private spawnPatient(missingOrganProb: number) {
+        let bedIndices = Phaser.Math.RND.shuffle([ 0, 1, 2, 3, 4, 5, 6 ]);
         for (let bedIndex of bedIndices) {
             let bed = this.beds[bedIndex];
             if (bed.patient === null) {
-                bed.generatePatient(0);
+                bed.generatePatient(missingOrganProb);
                 break;
             }
         }
@@ -289,6 +289,7 @@ export class Level extends Phaser.Scene {
             this.hint(doctor.x + 5, doctor.y - doctor.height / 2, 'how may i help you?');
             this.selectDoctor(doctor);
         } else {
+            this.hint(doctor.x + 5, doctor.y - doctor.height / 2, 'stop it, i am busy');
             this.invalidSound.play();
         }
     }
@@ -325,6 +326,7 @@ export class Level extends Phaser.Scene {
                 this.selectedDoc.setTarget(bed.patient);
                 this.selectSound.play();
             } else {
+                this.hint(bed.x - 42, bed.y + 10, 'grab an organ first');
                 this.invalidSound.play();
             }
         } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
@@ -337,10 +339,11 @@ export class Level extends Phaser.Scene {
                     this.selectedDoc.moveOrgan(this.selectedOrgan, this.selectedOrgan.getType(), bed.patient);
                 }
             } else {
-                this.hint(bed.x - 42, bed.y + 10, 'that\'s not possible');
+                this.hint(bed.x - 35, bed.y + 10, 'slot already taken');
                 this.invalidSound.play();
             }
         } else {
+            this.hint(bed.x - 42, bed.y + 10, 'grab an organ first');
             this.invalidSound.play();
         }
         this.deselectAll();
@@ -410,8 +413,7 @@ export class Level extends Phaser.Scene {
             } else {
                 this.invalidSound.play();
             }
-            this.selectedDoc.setSelected(false);
-            this.selectedDoc = null;
+            this.deselectAll();
         } else {
             this.selectedDoc = this.getAvailableDoctor();
             if (this.selectedDoc !== null) {
