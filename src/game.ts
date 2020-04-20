@@ -62,9 +62,9 @@ class EndScreen extends Phaser.Scene {
         
         this.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'endscreen')
             .play('smoke');
-        this.add.bitmapText(20, 19, 'akhbar', `patients dead: ${data['died']}`, 12).setTintFill(0x28221f);
-        this.add.bitmapText(20, 48, 'akhbar', `doctors shredded: ${data['sacrificed']}`, 13).setTintFill(0x28221f);
-        this.add.bitmapText(20, 76, 'akhbar', `organs transplanted: ${data['transplanted']}`, 14).setTintFill(0x28221f);
+        this.add.bitmapText(20, 20, 'akhbar', `patients dead: ${data['died']}`, 13).setTintFill(0x28221f);
+        this.add.bitmapText(20, 49, 'akhbar', `doctors shredded: ${data['sacrificed']}`, 13).setTintFill(0x28221f);
+        this.add.bitmapText(20, 77, 'akhbar', `organs transplanted: ${data['transplanted']}`, 13).setTintFill(0x28221f);
 
         this.sound.play('endscreen');
     }
@@ -256,11 +256,6 @@ export class Level extends Phaser.Scene {
                 this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
             }
         }
-            if (this.hoursOnClock == 20) {
-                // end of game
-                this.backgroundSound.stop();
-                this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
-            }
         this.clock.text = `${((this.hoursOnClock - 1) % 12 + 1).toString().padStart(2, '0')}:${(Math.floor(this.minutesOnClock / 15) * 15).toString().padStart(2, '0')} ${this.hoursOnClock == 24 || this.hoursOnClock < 12 ? 'am' : 'pm'}`;
     }
 
