@@ -6,7 +6,7 @@ import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO
 
 export class Patient extends Phaser.GameObjects.Container {
 
-    private bed: Bed;
+    bed: Bed;
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
     readonly doctorPosition: Phaser.Geom.Point;
@@ -14,12 +14,12 @@ export class Patient extends Phaser.GameObjects.Container {
     private extractOrganSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
-        super(scene, 100, 100);
+        super(scene);
         this.bed = bed;
         this.organs = {
-            cranium: new Organ(this.scene, 'cranium', bed),
-            liver: new Organ(this.scene, 'liver', bed),
-            nephro: new Organ(this.scene, 'nephro', bed)
+            cranium: new Organ(this.scene, 'cranium', bed, this),
+            liver: Math.random() < 0.5 ? null : new Organ(this.scene, 'liver', bed, this),
+            nephro: new Organ(this.scene, 'nephro', bed, this)
         };
         this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
@@ -32,6 +32,7 @@ export class Patient extends Phaser.GameObjects.Container {
                     this.organs[organType] = null;
                 }
             }
+            this.organs = null;
         });
     }
 
@@ -85,6 +86,9 @@ export class Patient extends Phaser.GameObjects.Container {
     }
 
     popOrgan(type: OrganType): Organ {
+        if (this.organs === null) {
+            return null;
+        }
         if (this.organs[type] !== null) {
             let organ: Organ = this.organs[type];
             organ.removeFromBed(this.bed);
@@ -97,8 +101,10 @@ export class Patient extends Phaser.GameObjects.Container {
     }
 
     setOrgan(organ: Organ): boolean {
+        if (this.organs === null) {
+            return false;
+        }
         let type = organ.getType();
-        
         if (this.organs[type] === null) {
             organ.addToBed(this.bed);
             organ.on('pointerdown', () => this.bed.onOrganClick(this, organ));

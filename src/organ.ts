@@ -1,6 +1,7 @@
 import 'phaser';
 import { Bed } from './bed';
-import { uglySettings, HOVER_OPACITY, FONT_FAMILY, DARK_COLOR } from './global';
+import { uglySettings, HOVER_OPACITY, FONT_FAMILY, DARK_COLOR, SELECT_OPACITY } from './global';
+import { Patient } from './patient';
 
 
 export type OrganType = 'cranium' | 'liver' | 'nephro';
@@ -19,39 +20,54 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private originalTimeToDecay: number;
     private timeToDecay: number;
     private dead: boolean;
-    owned: boolean;
+    patient: Patient;
+    pickedUp: boolean;
+    private selected: boolean;
     readonly countdownText: Phaser.GameObjects.Text;
     private beepSound: Phaser.Sound.BaseSound;
 
-    constructor(scene: Phaser.Scene, organType: OrganType, bed: Bed = null) {
+    constructor(scene: Phaser.Scene, organType: OrganType, bed?: Bed, patient?: Patient) {
         let offset = OFFSET[organType];
         super(scene, offset.x, offset.y, 'organ_' + organType);
         this.scene.add.existing(this);
         this.organType = organType;
         this.timeToDecay = null;
         this.dead = false;
-        this.owned = false;
+        this.pickedUp = false;
+        this.selected = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.beepSound = this.scene.sound.add('beep');
+        this.tintFill = false;
         this.setInteractive();
-        if (bed !== null) {
+        if (bed !== undefined) {
             this.addToBed(bed);
         } else {
             this.on('pointerover', () => this.alpha = HOVER_OPACITY);
             this.on('pointerout', () => this.alpha = 1);
         }
+        if (patient !== undefined) {
+            this.patient = patient;
+        } else {
+            this.patient = null;
+        }
+        
         this.on('destroy', () => {
             this.countdownText.destroy();
         });
     }
 
     get doctorPosition(): Phaser.Geom.Point {
-        return new Phaser.Geom.Point(this.x, this.y);
+        return new Phaser.Geom.Point(this.x - 10, this.y);
+    }
+
+    setSelected(selected: boolean) {
+        this.selected = selected;
     }
 
     removeFromBed(bed: Bed) {
         bed.remove(this);
         bed.remove(this.countdownText);
+        this.patient = null;
         this.alpha = 1;
         this.off('pointerover');
         this.off('pointerout');
@@ -60,6 +76,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     addToBed(bed: Bed) {
         bed.add(this);
         bed.add(this.countdownText);
+        this.patient = bed.patient;
         this.x = OFFSET[this.organType].x;
         this.y = OFFSET[this.organType].y;
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);
