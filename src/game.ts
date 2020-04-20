@@ -32,8 +32,6 @@ class TitleScreen extends Phaser.Scene {
     }
 
     create() {
-        console.log('title');
-        
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'titlescreen')
             .setInteractive()
             .on('pointerdown', () => this.scene.start('level'));
