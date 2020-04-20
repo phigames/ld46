@@ -62,6 +62,17 @@ export class Bed extends Phaser.GameObjects.Container {
                 oldInfoBoard.destroy();
             }
         });
+        let ghost = this.scene.add.image(this.x, this.y + 15, 'ghost');
+        ghost.depth = 1000;
+        this.scene.tweens.add({
+            targets: ghost,
+            y: '-=50',
+            alpha: 0,
+            duration: 2000,
+            onComplete: () => {
+                ghost.destroy();
+            }
+        });
         this.scene.tweens.add({
             targets: this.sprite,
             alpha: 1,
