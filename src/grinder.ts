@@ -9,6 +9,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
     private origY: number;
     private onOrganClick: (organ: Organ) => void;
     readonly back: Phaser.GameObjects.Image;
+    private grindSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, x: number, y: number, onOrganClick: (organ: Organ) => void) {
         super(scene, 0, 0, 'grinder_front');
@@ -19,6 +20,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
         this.back = scene.add.image(this.x, this.y, 'grinder_back');
         this.back.depth = this.depth - 20;
         this.doctorPosition = new Phaser.Geom.Point(this.x - 50, this.y);
+        this.grindSound = this.scene.sound.add('grinder');
         this.setInteractive();
         this.on('pointerover', () => this.alpha = this.back.alpha = HOVER_OPACITY);
         this.on('pointerout', () => this.alpha = this.back.alpha = 1);
@@ -45,6 +47,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
                         this.y = this.back.y = this.origY + Math.random() * 8 - 4;
                     }
                 });
+                this.grindSound.play();
                 // spawn organs
                 let organs: Organ[] = [];
                 let r = Math.random();

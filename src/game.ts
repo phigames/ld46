@@ -64,9 +64,11 @@ export class Level extends Phaser.Scene {
         this.loadAudio('select');
         this.loadAudio('popup');
         this.loadAudio('extract_organ');
+        this.loadAudio('insert_organ');
         this.loadAudio('problem');
         this.loadAudio('beep');
         this.loadAudio('pit');
+        this.loadAudio('grinder');
         this.loadAudio('endscreen');
     }
 

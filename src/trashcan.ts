@@ -11,7 +11,7 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
         this.x = x;
         this.y = y;
         this.depth = this.y + this.height / 2;
-        this.doctorPosition = new Phaser.Geom.Point(this.x - 20, this.y);
+        this.doctorPosition = new Phaser.Geom.Point(this.x - 27, this.y);
         this.pitSound = this.scene.sound.add('pit');
         this.setInteractive();
         this.on('pointerover', () => this.alpha = HOVER_OPACITY);

@@ -12,6 +12,7 @@ export class Patient extends Phaser.GameObjects.Container {
     readonly doctorPosition: Phaser.Geom.Point;
     private problemSound: Phaser.Sound.BaseSound;
     private extractOrganSound: Phaser.Sound.BaseSound;
+    private insertOrganSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
         super(scene);
@@ -25,6 +26,7 @@ export class Patient extends Phaser.GameObjects.Container {
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
         this.problemSound = this.scene.sound.add('problem');
         this.extractOrganSound = this.scene.sound.add('extract_organ');
+        this.insertOrganSound = this.scene.sound.add('insert_organ');
         this.on('destroy', () => {
             for (let organType of ORGAN_TYPES) {
                 if (this.organs[organType] !== null) {
@@ -109,6 +111,7 @@ export class Patient extends Phaser.GameObjects.Container {
             organ.addToBed(this.bed);
             organ.on('pointerdown', () => this.bed.onOrganClick(this, organ));
             this.organs[type] = organ;
+            this.insertOrganSound.play();
             return true;
         }
         return false;

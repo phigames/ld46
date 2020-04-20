@@ -71,6 +71,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.alpha = 1;
         this.off('pointerover');
         this.off('pointerout');
+        this.beepSound.stop();
     }
 
     addToBed(bed: Bed) {
