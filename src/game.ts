@@ -23,6 +23,7 @@ export class Level extends Phaser.Scene {
     invalidSound: Phaser.Sound.BaseSound;
     selectSound: Phaser.Sound.BaseSound;
     popupSound: Phaser.Sound.BaseSound;
+    backgroundSound: Phaser.Sound.BaseSound;
 
     constructor() {
         super('level');
@@ -58,6 +59,7 @@ export class Level extends Phaser.Scene {
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor', 50, 50);
 
+        this.loadAudio('background');
         this.loadAudio('invalid');
         this.loadAudio('select');
         this.loadAudio('popup');
@@ -127,6 +129,10 @@ export class Level extends Phaser.Scene {
 
         this.invalidSound = this.sound.add('invalid');
         this.selectSound = this.sound.add('select');
+        this.backgroundSound = this.sound.add('background');
+        this.backgroundSound.play({
+            loop: true
+        })
     }
 
     update(time: number, delta: number) {
