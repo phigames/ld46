@@ -4,15 +4,16 @@ import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
-import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL } from './global';
+import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY } from './global';
 import { Grinder } from './grinder';
 
 
 export class Level extends Phaser.Scene {
 
     beds: Bed[];
-    currentDoc: Doctor;
-    currentBed: Bed;
+    selectedDoc: Doctor;
+    selectedOrgan: Organ;
+    private selectionMarker: Phaser.GameObjects.Rectangle;
     trashcanLeft: TrashCan;
     trashcanRight: TrashCan;
     grinder: Grinder;
@@ -26,7 +27,8 @@ export class Level extends Phaser.Scene {
     constructor() {
         super('level');
         this.beds = [];
-        this.currentDoc = null;
+        this.selectedDoc = null;
+        this.selectedOrgan = null;
         this.timeToSpawnDoctor = 1000;
         this.timeToSpawnPatient = 0;
     }
@@ -67,8 +69,17 @@ export class Level extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+        let background = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'background');
+        background.depth = -10000;
+        background.setInteractive();
+        background.on('pointerdown', () => this.deselectAll());
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
+
+        this.selectionMarker = this.add.rectangle(0, 0, 50, 50);
+        this.selectionMarker.fillAlpha = 0;
+        this.selectionMarker.setStrokeStyle(1, 0xd4eded);
+        this.selectionMarker.depth = 10000;
+        this.selectionMarker.visible = false;
 
         for (let i = 0; i < 7; i++) {
             let bed = new Bed(this, i, this.onOrganClick.bind(this));
@@ -160,17 +171,85 @@ export class Level extends Phaser.Scene {
 
     }
 
+    hint(x: number, y: number, message: string) {
+        let text = this.add.text(x, y, message, { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        text.depth = 100000;
+        this.tweens.add({
+            targets: text,
+            y: '-=10',
+            alpha: 0,
+            duration: 300,
+            delay: 1000
+        });
+    }
+
+    private getAvailableDoctor(): Doctor {
+        for (let child of this.children.getAll()) {
+            if (child.name == 'doctor') {
+                let doctor = <Doctor>child;
+                if (doctor.isReadyToRemove()) {
+                    return doctor;
+                }
+            }
+        }
+        return null;
+    }
+
+    private selectDoctor(doctor: Doctor) {
+        if (this.selectedDoc !== null) {
+            this.selectedDoc.setSelected(false);
+        }
+        this.selectedDoc = doctor;
+        this.selectedDoc.setSelected(true);
+        this.selectionMarker.displayWidth = Math.round(this.selectedDoc.width + 1);
+        this.selectionMarker.displayHeight = Math.round(this.selectedDoc.height + 1);
+        this.selectionMarker.x = Math.round(this.selectedDoc.x);
+        this.selectionMarker.y = Math.round(this.selectedDoc.y);
+        this.selectionMarker.visible = true;
+        this.selectSound.play();
+        console.log(this.selectionMarker);
+    }
+
+    private selectOrgan(organ: Organ) {
+        if (this.selectedOrgan !== null) {
+            this.selectedOrgan.setSelected(false);
+        }
+        this.selectedOrgan = organ;
+        this.selectedOrgan.setSelected(true);
+        this.selectionMarker.displayWidth = Math.round(this.selectedOrgan.width + 2);
+        this.selectionMarker.displayHeight = Math.round(this.selectedOrgan.height + 2);
+        if (this.selectedOrgan.patient !== null) {
+            this.selectionMarker.x = Math.round(this.selectedOrgan.patient.bed.x + this.selectedOrgan.x);
+            this.selectionMarker.y = Math.round(this.selectedOrgan.patient.bed.y + this.selectedOrgan.y);
+        } else {
+            this.selectionMarker.x = Math.round(this.selectedOrgan.x);
+            this.selectionMarker.y = Math.round(this.selectedOrgan.y);
+        }
+        this.selectionMarker.visible = true;
+        this.selectSound.play();
+        console.log(this.selectionMarker);
+        
+    }
+
+    private deselectAll() {
+        if (this.selectedDoc !== null) {
+            this.selectedDoc.setSelected(false);
+            this.selectedDoc = null;
+        }
+        if (this.selectedOrgan !== null) {
+            this.selectedOrgan.setSelected(false);
+            this.selectedOrgan = null;
+        }
+        this.selectionMarker.visible = false;
+    }
+
     onDoctorClick(doctor: Doctor) {
         if (uglySettings.updatesPaused) {
             return;
         }
         if (doctor.isReadyToInsert() || doctor.isReadyToRemove()) {
-            if (this.currentDoc !== null) {
-                this.currentDoc.setSelected(false);
-            }
-            this.currentDoc = doctor;
-            this.currentDoc.setSelected(true);
-            this.selectSound.play();
+            this.hint(doctor.x + 5, doctor.y - doctor.height / 2, 'how may i help you?');
+            this.selectDoctor(doctor);
         } else {
             this.invalidSound.play();
         }
@@ -180,17 +259,21 @@ export class Level extends Phaser.Scene {
         if (uglySettings.updatesPaused) {
             return;
         }
-        if (this.currentDoc !== null) {
-            if (this.currentDoc.isReadyToRemove()) {
-                this.currentDoc.setRemoveTarget(patient, organ.getType());
-            } else if (this.currentDoc.isReadyToRemove()) {
-                this.currentDoc.setTarget(patient);
+        if (this.selectedDoc !== null && this.selectedOrgan === null) {
+            if (this.selectedDoc.isReadyToRemove()) {
+                this.selectedDoc.setRemoveTarget(patient, organ.getType());
+                this.selectSound.play();
             }
-            this.currentDoc.setSelected(false);
-            this.currentDoc = null;
-            this.selectSound.play();
+            this.deselectAll();
         } else {
-            this.invalidSound.play();
+            this.selectedDoc = this.getAvailableDoctor();
+            if (this.selectedDoc !== null) {
+                this.selectOrgan(organ);
+                this.hint(this.selectionMarker.x, this.selectionMarker.y, 'where should this go?');
+            } else {
+                // no doctor available
+                this.invalidSound.play();
+            }
         }
     }
 
@@ -198,57 +281,102 @@ export class Level extends Phaser.Scene {
         if (uglySettings.updatesPaused) {
             return;
         }
-        if (this.currentDoc !== null && this.currentDoc.isReadyToInsert() && bed.canBeInserted(this.currentDoc.organ)) {
-            this.currentDoc.setTarget(bed.patient);
-            this.currentDoc.setSelected(false);
-            this.currentDoc = null;
-            this.selectSound.play();
+        if (this.selectedDoc !== null && this.selectedOrgan === null) {
+            if (this.selectedDoc.isReadyToInsert() && bed.canBeInserted(this.selectedDoc.organ)) {
+                this.selectedDoc.setTarget(bed.patient);
+                this.selectSound.play();
+            } else {
+                this.invalidSound.play();
+            }
+        } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
+            if (bed.canBeInserted(this.selectedOrgan)) {
+                if (this.selectedOrgan.patient !== null) {
+                    // organ is attached to a patient, use patient as target
+                    this.selectedDoc.moveOrgan(this.selectedOrgan.patient, this.selectedOrgan.getType(), bed.patient);
+                } else {
+                    // organ is free, use organ as target
+                    this.selectedDoc.moveOrgan(this.selectedOrgan, this.selectedOrgan.getType(), bed.patient);
+                }
+            }
         } else {
             this.invalidSound.play();
         }
+        this.deselectAll();
     }
 
     onTrashcanClick(trashcan: TrashCan) {
         if (uglySettings.updatesPaused) {
             return;
         }
-        if (this.currentDoc !== null && this.currentDoc.isReadyToInsert()) {
-            this.currentDoc.setTarget(trashcan);
-            this.currentDoc.setSelected(false);
-            this.currentDoc = null;
+        if (this.selectedDoc !== null && this.selectedOrgan === null) {
+            if (this.selectedDoc.isReadyToInsert()) {
+                this.selectedDoc.setTarget(trashcan);
+                this.selectSound.play();
+            } else {
+                this.invalidSound.play();
+            }
+        } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
+            if (this.selectedOrgan.patient !== null) {
+                // organ is attached to a patient, use patient as target
+                this.selectedDoc.moveOrgan(this.selectedOrgan.patient, this.selectedOrgan.getType(), trashcan);
+            } else {
+                // organ is free, use organ as target
+                this.selectedDoc.moveOrgan(this.selectedOrgan, this.selectedOrgan.getType(), trashcan);
+            }
             this.selectSound.play();
         } else {
             this.invalidSound.play();
         }
+        this.deselectAll();
     }
 
     onGrinderClick(grinder: Grinder) {
         if (uglySettings.updatesPaused) {
             return;
         }
-        if (this.currentDoc !== null && (this.currentDoc.isReadyToRemove() || this.currentDoc.isReadyToInsert())) {
-            this.currentDoc.setTarget(grinder);
-            this.currentDoc.setSelected(false);
-            this.currentDoc = null;
+        if (this.selectedDoc !== null && this.selectedOrgan === null) {
+            if (this.selectedDoc.isReadyToRemove() || this.selectedDoc.isReadyToInsert()) {
+                this.selectedDoc.setTarget(grinder);
+                this.selectSound.play();
+            } else {
+                this.invalidSound.play();
+            }
+        } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
+            if (this.selectedOrgan.patient !== null) {
+                // organ is attached to a patient, use patient as target
+                this.selectedDoc.moveOrgan(this.selectedOrgan.patient, this.selectedOrgan.getType(), grinder);
+            } else {
+                // organ is free, use organ as target
+                this.selectedDoc.moveOrgan(this.selectedOrgan, this.selectedOrgan.getType(), grinder);
+            }
             this.selectSound.play();
         } else {
             this.invalidSound.play();
         }
+        this.deselectAll();
     }
 
     onFreeOrganClick(organ: Organ) {
-        console.log('free organ click');
-        
         if (uglySettings.updatesPaused) {
             return;
         }
-        if (this.currentDoc !== null && this.currentDoc.isReadyToRemove() && !organ.owned) {
-            this.currentDoc.setTarget(organ);
-            this.currentDoc.setSelected(false);
-            this.currentDoc = null;
-            this.selectSound.play();
+        if (this.selectedDoc !== null) {
+            if (this.selectedDoc.isReadyToRemove() && organ.patient === null) {
+                this.selectedDoc.setTarget(organ);
+                this.selectSound.play();
+            } else {
+                this.invalidSound.play();
+            }
+            this.selectedDoc.setSelected(false);
+            this.selectedDoc = null;
         } else {
-            this.invalidSound.play();
+            this.selectedDoc = this.getAvailableDoctor();
+            if (this.selectedDoc !== null) {
+                this.selectOrgan(organ);
+            } else {
+                // no doctor available
+                this.invalidSound.play();
+            }
         }
     }
 
