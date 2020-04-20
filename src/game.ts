@@ -56,6 +56,7 @@ export class Level extends Phaser.Scene {
         this.loadImage('pits_front');
         this.loadImage('grinder_back');
         this.loadImage('grinder_front');
+        this.loadImage('ghost');
         this.loadSpreadsheet('bed', 50, 50);
         this.loadSpreadsheet('doctor', 50, 50);
 
@@ -220,7 +221,10 @@ export class Level extends Phaser.Scene {
             y: '-=10',
             alpha: 0,
             duration: 300,
-            delay: duration
+            delay: duration,
+            onComplete: () => {
+                text.destroy();
+            }
         });
     }
 
@@ -375,6 +379,7 @@ export class Level extends Phaser.Scene {
             }
             this.selectSound.play();
         } else {
+            this.hint(trashcan.x - 42, trashcan.y - 20, 'grab an organ first');
             this.invalidSound.play();
         }
         this.deselectAll();
