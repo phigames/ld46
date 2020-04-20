@@ -23,7 +23,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     patient: Patient;
     pickedUp: boolean;
     private selected: boolean;
-    readonly countdownText: Phaser.GameObjects.Text;
+    readonly countdownText: Phaser.GameObjects.BitmapText;
     private beepSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, organType: OrganType, bed?: Bed, patient?: Patient) {
@@ -35,7 +35,8 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.dead = false;
         this.pickedUp = false;
         this.selected = false;
-        this.countdownText = scene.add.text(0, Math.round(offset.y - 5), '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        this.countdownText = scene.add.bitmapText(0, Math.round(offset.y - 3), 'akhbar', '');
+        this.countdownText.fontSize = 7;
         this.beepSound = this.scene.sound.add('beep');
         this.tintFill = false;
         this.setInteractive();
@@ -113,9 +114,9 @@ export class Organ extends Phaser.GameObjects.Sprite {
             this.countdownText.setText(this.getCountdown());
             if (this.timeToDecay < 5000) {
                 if (this.timeToDecay % 500 > 250) {
-                    this.countdownText.setColor('#ff0000');
+                    this.countdownText.setTintFill(0xff0000);
                 } else {
-                    this.countdownText.setColor('#000000');
+                    this.countdownText.setTintFill(0x28221f);
                 }
                 if (!this.beepSound.isPlaying) {
                     this.beepSound.play({

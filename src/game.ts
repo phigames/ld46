@@ -140,6 +140,8 @@ export class Level extends Phaser.Scene {
         this.loadAudio('grinder');
         this.loadAudio('endscreen');
 
+        this.load.bitmapFont('akhbar', 'assets/akhbartype.png', 'assets/akhbartype.xml');
+
         let progressText = this.add.text(GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2 - 10, '0%', { fontFamily: FONT_FAMILY, color: DARK_COLOR });
         this.load.on('progress', (progress: number) => {
             progressText.text = `loading...${Math.round(progress * 100)}`;
