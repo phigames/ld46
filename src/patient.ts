@@ -1,7 +1,7 @@
 import 'phaser';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
-import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL } from './global';
+import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO_DECAY } from './global';
 
 
 export class Patient extends Phaser.GameObjects.Container {
@@ -10,6 +10,8 @@ export class Patient extends Phaser.GameObjects.Container {
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
     readonly doctorPosition: Phaser.Geom.Point;
+    private problemSound: Phaser.Sound.BaseSound;
+    private extractOrganSound: Phaser.Sound.BaseSound;
 
     constructor(scene: Phaser.Scene, bed: Bed) {
         super(scene, 100, 100);
@@ -19,9 +21,10 @@ export class Patient extends Phaser.GameObjects.Container {
             liver: new Organ(this.scene, 'liver', bed),
             nephro: new Organ(this.scene, 'nephro', bed)
         };
-
         this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
+        this.problemSound = this.scene.sound.add('problem');
+        this.extractOrganSound = this.scene.sound.add('extract_organ');
         this.on('destroy', () => {
             for (let organType of ORGAN_TYPES) {
                 if (this.organs[organType] !== null) {
@@ -76,8 +79,8 @@ export class Patient extends Phaser.GameObjects.Container {
         }
 
         if (organ !== null) {
-            let timeToDecay = 5000;
-            organ.startDecay(timeToDecay);
+            organ.startDecay(ORGAN_TIME_TO_DECAY);
+            this.problemSound.play();
         }
     }
 
@@ -87,6 +90,7 @@ export class Patient extends Phaser.GameObjects.Container {
             organ.removeFromBed(this.bed);
             organ.off('pointerdown');
             this.organs[type] = null;
+            this.extractOrganSound.play();
             return organ;
         }
         return null;
