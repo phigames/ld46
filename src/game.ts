@@ -304,6 +304,10 @@ export class Level extends Phaser.Scene {
                 this.selectSound.play();
             }
             this.deselectAll();
+        } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
+            this.hint(patient.bed.x + organ.x + 8, patient.bed.y + organ.y + 5, 'can\'t put this here');
+            this.invalidSound.play();
+            this.deselectAll();
         } else {
             this.selectedDoc = this.getAvailableDoctor();
             if (this.selectedDoc !== null) {
