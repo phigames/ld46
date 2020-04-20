@@ -49,6 +49,7 @@ class EndScreen extends Phaser.Scene {
     preload() {
         this.load.spritesheet('endscreen', `assets/endscreen.png`, { frameWidth: GAME_WIDTH, frameHeight: GAME_HEIGHT });
         this.load.audio('endscreen', 'assets/endscreen.ogg');
+        this.load.bitmapFont('akhbar', 'assets/akhbartype.png', 'assets/akhbartype.xml');
     }
 
     create(data: object) {
@@ -61,9 +62,9 @@ class EndScreen extends Phaser.Scene {
         
         this.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'endscreen')
             .play('smoke');
-        this.add.text(20, 17, `patients dead: ${data['died']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
-        this.add.text(20, 46, `doctors shredded: ${data['sacrificed']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
-        this.add.text(20, 74, `organs transplanted: ${data['transplanted']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
+        this.add.bitmapText(20, 19, 'akhbar', `patients dead: ${data['died']}`, 12).setTintFill(0x28221f);
+        this.add.bitmapText(20, 48, 'akhbar', `doctors shredded: ${data['sacrificed']}`, 13).setTintFill(0x28221f);
+        this.add.bitmapText(20, 76, 'akhbar', `organs transplanted: ${data['transplanted']}`, 14).setTintFill(0x28221f);
 
         this.sound.play('endscreen');
     }
@@ -157,9 +158,7 @@ export class Level extends Phaser.Scene {
         background.setInteractive();
         background.on('pointerdown', () => this.deselectAll());
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
-        this.clock = this.add.bitmapText(GAME_WIDTH - 39, 4, 'akhbar', '', 7);
-        this.clock.setTintFill(0xdfb9ca);
-
+        this.clock = this.add.bitmapText(GAME_WIDTH - 39, 4, 'akhbar', '', 7).setTintFill(0xdfb9ca);
         this.selectionMarker = this.add.rectangle(0, 0, 50, 50);
         this.selectionMarker.fillAlpha = 0;
         this.selectionMarker.setStrokeStyle(1, 0xd4eded);
@@ -257,6 +256,11 @@ export class Level extends Phaser.Scene {
                 this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
             }
         }
+            if (this.hoursOnClock == 20) {
+                // end of game
+                this.backgroundSound.stop();
+                this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
+            }
         this.clock.text = `${((this.hoursOnClock - 1) % 12 + 1).toString().padStart(2, '0')}:${(Math.floor(this.minutesOnClock / 15) * 15).toString().padStart(2, '0')} ${this.hoursOnClock == 24 || this.hoursOnClock < 12 ? 'am' : 'pm'}`;
     }
 
@@ -348,7 +352,7 @@ export class Level extends Phaser.Scene {
         if (duration === undefined) {
             duration = 1000;
         }
-        let text = this.add.bitmapText(Math.round(x), Math.round(y), 'akhbar', message, 7);
+        let text = this.add.bitmapText(Math.round(x), Math.round(y + 2), 'akhbar', message, 7);
         text.setTintFill(0x28221f);
         text.depth = 100000;
         this.tweens.add({
