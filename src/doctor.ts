@@ -63,7 +63,6 @@ export class Doctor extends Phaser.GameObjects.Container {
 
     setSelected(selected: boolean) {
         this.selected = selected;
-        // this.alpha = selected ? SELECT_OPACITY : 1;
     }
 
     isReadyToRemove() {

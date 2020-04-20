@@ -62,7 +62,6 @@ export class Organ extends Phaser.GameObjects.Sprite {
 
     setSelected(selected: boolean) {
         this.selected = selected;
-        // this.alpha = selected ? SELECT_OPACITY : 1;
     }
 
     removeFromBed(bed: Bed) {

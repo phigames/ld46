@@ -269,7 +269,7 @@ export class Level extends Phaser.Scene {
             this.selectedDoc = this.getAvailableDoctor();
             if (this.selectedDoc !== null) {
                 this.selectOrgan(organ);
-                this.hint(this.selectionMarker.x, this.selectionMarker.y, 'where should this go?');
+                this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
             } else {
                 // no doctor available
                 this.invalidSound.play();
@@ -297,6 +297,9 @@ export class Level extends Phaser.Scene {
                     // organ is free, use organ as target
                     this.selectedDoc.moveOrgan(this.selectedOrgan, this.selectedOrgan.getType(), bed.patient);
                 }
+            } else {
+                this.hint(bed.x - 42, bed.y + 10, 'that\'s not possible');
+                this.invalidSound.play();
             }
         } else {
             this.invalidSound.play();
@@ -313,6 +316,7 @@ export class Level extends Phaser.Scene {
                 this.selectedDoc.setTarget(trashcan);
                 this.selectSound.play();
             } else {
+                this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'that\'s not possible');
                 this.invalidSound.play();
             }
         } else if (this.selectedDoc !== null && this.selectedOrgan !== null) {
@@ -373,8 +377,10 @@ export class Level extends Phaser.Scene {
             this.selectedDoc = this.getAvailableDoctor();
             if (this.selectedDoc !== null) {
                 this.selectOrgan(organ);
+                this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
             } else {
                 // no doctor available
+                this.hint(organ.x + 8, organ.y + 5, 'all doctory are busy');
                 this.invalidSound.play();
             }
         }
