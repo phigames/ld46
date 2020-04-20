@@ -3,12 +3,60 @@ import { Bed } from './bed';
 import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
-import { OrganType, Organ } from './organ';
+import { Organ } from './organ';
 import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY, GRINDER_APPEAR_TIME, INITIAL_ORGAN_NUMBER, PATIENT_MISSING_ORGAN_PROB } from './global';
 import { Grinder } from './grinder';
 
 
-export class Level extends Phaser.Scene {
+class TitleScreen extends Phaser.Scene {
+
+    constructor() {
+        super('title');
+    }
+
+    preload() {
+        this.load.image('titlescreen', 'assets/titlescreen.png');
+    }
+
+    create() {
+        console.log('title');
+        
+        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'titlescreen')
+            .setInteractive()
+            .on('pointerdown', () => this.scene.start('level'));
+    }
+
+}
+
+
+class EndScreen extends Phaser.Scene {
+
+    died: number;
+    sacrificed: number;
+
+    constructor() {
+        super('end');
+    }
+    
+    preload() {
+        this.load.image('endscreen', 'assets/titlescreen.png');
+    }
+
+    create(data: object) {
+        console.log('title');
+        
+        this.died = data['died'];
+        this.sacrificed = data['sacrificed'];
+        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'endscreen')
+            .setInteractive()
+            .on('pointerdown', () => { /* TODO */ });
+        this.add.text(50, 50, `${this.died}, ${this.sacrificed}`, { fontFamily: FONT_FAMILY, color: 0x28221f });
+    }
+
+}
+
+
+class Level extends Phaser.Scene {
 
     beds: Bed[];
     selectedDoc: Doctor;
@@ -19,6 +67,9 @@ export class Level extends Phaser.Scene {
     grinder: Grinder;
     timeToSpawnDoctor: number;
     timeToSpawnPatient: number;
+    hoursOnClock: number;
+    minutesOnClock: number;
+    clock: Phaser.GameObjects.Text;
 
     invalidSound: Phaser.Sound.BaseSound;
     selectSound: Phaser.Sound.BaseSound;
@@ -32,6 +83,8 @@ export class Level extends Phaser.Scene {
         this.selectedOrgan = null;
         this.timeToSpawnDoctor = 500;
         this.timeToSpawnPatient = 0;
+        this.hoursOnClock = 20;
+        this.minutesOnClock = 0;
     }
 
     loadImage(name: string) {
@@ -71,6 +124,14 @@ export class Level extends Phaser.Scene {
         this.loadAudio('pit');
         this.loadAudio('grinder');
         this.loadAudio('endscreen');
+
+        let progressText = this.add.text(GAME_WIDTH / 2 - 40, GAME_HEIGHT / 2 - 10, '0%', { fontFamily: FONT_FAMILY, color: DARK_COLOR });
+        this.load.on('progress', (progress: number) => {
+            progressText.text = `loading...${Math.round(progress * 100)}`;
+        });
+        this.load.on('complete', () => {
+            progressText.destroy();
+        });
     }
 
     create() {
@@ -79,6 +140,7 @@ export class Level extends Phaser.Scene {
         background.setInteractive();
         background.on('pointerdown', () => this.deselectAll());
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
+        this.clock = this.add.text(GAME_WIDTH - 40, 30, '', { fontFamily: FONT_FAMILY, color: '#dfb9ca', fontSize: '8px' });
 
         this.selectionMarker = this.add.rectangle(0, 0, 50, 50);
         this.selectionMarker.fillAlpha = 0;
@@ -163,6 +225,20 @@ export class Level extends Phaser.Scene {
             this.spawnPatient(PATIENT_MISSING_ORGAN_PROB);
             this.timeToSpawnPatient = PATIENT_SPAWN_INTERVAL;
         }
+
+        this.minutesOnClock += delta / 1000 * 2;  // 2 minutes per second
+        if (this.minutesOnClock >= 60) {
+            this.hoursOnClock++;
+            this.minutesOnClock -= 60;
+            if (this.hoursOnClock > 24) {
+                this.hoursOnClock -= 24;
+            }
+            if (this.hoursOnClock == 20) {
+                // end of game
+                this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed });
+            }
+        }
+        this.clock.text = `${((this.hoursOnClock - 1) % 12 + 1).toString().padStart(2, '0')}:${(Math.floor(this.minutesOnClock / 15) * 15).toString().padStart(2, '0')} ${this.hoursOnClock == 24 || this.hoursOnClock < 12 ? 'am' : 'pm'}`;
     }
 
     private spawnDoctor() {
@@ -203,9 +279,9 @@ export class Level extends Phaser.Scene {
     popup(message: string) {
         uglySettings.updatesPaused = true;
         let popup = this.add.rectangle(100, 100, 200, 100);
-        popup.on('click', () => {
+        popup.on('pointerdown', () => {
             uglySettings.updatesPaused = false;
-            popup.off('click');
+            popup.off('pointerdown');
         });
 
     }
@@ -214,7 +290,7 @@ export class Level extends Phaser.Scene {
         if (duration === undefined) {
             duration = 1000;
         }
-        let text = this.add.text(x, y, message, { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        let text = this.add.text(Math.round(x), Math.round(y), message, { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         text.depth = 100000;
         this.tweens.add({
             targets: text,
@@ -290,6 +366,7 @@ export class Level extends Phaser.Scene {
         if (uglySettings.updatesPaused) {
             return;
         }
+        this.deselectAll();
         if (doctor.isReadyToInsert() || doctor.isReadyToRemove()) {
             this.hint(doctor.x + 5, doctor.y - doctor.height / 2, 'how may i help you?');
             this.selectDoctor(doctor);
@@ -322,6 +399,7 @@ export class Level extends Phaser.Scene {
                 // no doctor available
                 this.hint(patient.bed.x + organ.x + 8, patient.bed.y + organ.y + 5, 'all doctors are busy');
                 this.invalidSound.play();
+                this.deselectAll();
             }
         }
     }
@@ -331,9 +409,13 @@ export class Level extends Phaser.Scene {
             return;
         }
         if (this.selectedDoc !== null && this.selectedOrgan === null) {
-            if (this.selectedDoc.isReadyToInsert() && bed.canBeInserted(this.selectedDoc.organ)) {
-                this.selectedDoc.setTarget(bed.patient);
-                this.selectSound.play();
+            if (this.selectedDoc.isReadyToInsert()) {
+                if (bed.canBeInserted(this.selectedDoc.organ)) {
+                    this.selectedDoc.setTarget(bed.patient);
+                    this.selectSound.play();
+                } else {
+                    this.hint(bed.x - 35, bed.y + 10, 'slot already taken');
+                }
             } else {
                 this.hint(bed.x - 42, bed.y + 10, 'grab an organ first');
                 this.invalidSound.play();
@@ -352,7 +434,7 @@ export class Level extends Phaser.Scene {
                 this.invalidSound.play();
             }
         } else {
-            this.hint(bed.x - 42, bed.y + 10, 'grab an organ first');
+            this.hint(bed.x - 55, bed.y + 10, 'select organ or doctor first');
             this.invalidSound.play();
         }
         this.deselectAll();
@@ -442,12 +524,12 @@ export class Level extends Phaser.Scene {
 
 const config = {
     type: Phaser.AUTO,
-    // backgroundColor: '#125555',
+    backgroundColor: '#acc2c3',
     width: GAME_WIDTH,
     height: GAME_HEIGHT,
     pixelArt: true,
     zoom: 3,
-    scene: Level
+    scene: [ TitleScreen, Level, EndScreen ]
 };
 
 const game = new Phaser.Game(config);

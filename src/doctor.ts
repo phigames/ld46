@@ -2,11 +2,8 @@ import 'phaser';
 import { Organ, OrganType } from './organ';
 import { TrashCan } from './trashcan';
 import { Patient } from './patient';
-import { uglySettings, HOVER_OPACITY, SELECT_OPACITY } from './global';
+import { uglySettings, HOVER_OPACITY, DOCTOR_SPEED } from './global';
 import { Grinder } from './grinder';
-
-
-const SPEED = 0.05;
 
 
 type MoveMode = 'start' | 'walk-to-x' | 'walk-to-y' | 'return';
@@ -95,7 +92,7 @@ export class Doctor extends Phaser.GameObjects.Container {
 
     private walkToStart(delta: number): boolean {
         if (this.x < this.startX) {
-            this.x += delta * SPEED;
+            this.x += delta * DOCTOR_SPEED;
         } else {
             this.x = this.startX;
             this.moveMode = null;
@@ -110,7 +107,7 @@ export class Doctor extends Phaser.GameObjects.Container {
             case 'walk-to-x':
                 if (this.x <= this.target.doctorPosition.x) {
                     // walk right
-                    this.x += delta * SPEED;
+                    this.x += delta * DOCTOR_SPEED;
                     if (this.x >= this.target.doctorPosition.x) {
                         this.x = this.target.doctorPosition.x;
                         this.moveMode = 'walk-to-y';
@@ -118,7 +115,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.sprite.flipX = false;
                 } else if (this.x > this.target.doctorPosition.x) {
                     // walk left
-                    this.x -= delta * SPEED;
+                    this.x -= delta * DOCTOR_SPEED;
                     if (this.x <= this.target.doctorPosition.x) {
                         this.x = this.target.doctorPosition.x;
                         this.moveMode = 'walk-to-y';
@@ -130,7 +127,7 @@ export class Doctor extends Phaser.GameObjects.Container {
             case 'walk-to-y':
                 if (this.y <= this.target.doctorPosition.y) {
                     // walk down
-                    this.y += delta * SPEED;
+                    this.y += delta * DOCTOR_SPEED;
                     if (this.y >= this.target.doctorPosition.y) {
                         this.y = this.target.doctorPosition.y;
                         this.moveMode = null;
@@ -138,7 +135,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                     }
                 } else if (this.y > this.target.doctorPosition.y) {
                     // walk up
-                    this.y -= delta * SPEED;
+                    this.y -= delta * DOCTOR_SPEED;
                     if (this.y <= this.target.doctorPosition.y) {
                         this.y = this.target.doctorPosition.y;
                         this.moveMode = null;
@@ -154,14 +151,14 @@ export class Doctor extends Phaser.GameObjects.Container {
     private walkToCenter(delta: number) {
         let reachedCenter = false;
         if (this.y <= this.centerLane) {
-            this.y += delta * SPEED;
+            this.y += delta * DOCTOR_SPEED;
             if (this.y >= this.centerLane) {
                 this.y = this.centerLane;
                 this.moveMode = null;
                 reachedCenter = true;
             }
         } else if (this.y > this.centerLane) {
-            this.y -= delta * SPEED;
+            this.y -= delta * DOCTOR_SPEED;
             if (this.y <= this.centerLane) {
                 this.y = this.centerLane;
                 this.moveMode = null;
@@ -249,6 +246,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                         this.organ = this.target;
                         this.add(this.organ);
                         this.organ.pickedUp = true;
+                        this.organ.off('pointerdown');
                     } else {
                         // organ has already been taken
                         this.nextTask = null;

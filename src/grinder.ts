@@ -1,5 +1,5 @@
-import { Organ, ORGAN_TYPES } from './organ';
-import { HOVER_OPACITY } from './global';
+import { Organ } from './organ';
+import { HOVER_OPACITY, uglySettings } from './global';
 import { Doctor } from './doctor';
 
 export class Grinder extends Phaser.GameObjects.Sprite {
@@ -82,6 +82,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
                 });
             }
         });
+        uglySettings.stats.sacrificed++;
     }
 
 }

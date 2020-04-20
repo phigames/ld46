@@ -1,7 +1,7 @@
 import 'phaser';
 import { Patient } from './patient';
-import { Organ, ORGAN_TYPES } from './organ';
-import { HOVER_OPACITY } from './global';
+import { Organ } from './organ';
+import { HOVER_OPACITY, EASY_PATIENT_PROB, uglySettings } from './global';
 
 
 const WIDTH = 50;
@@ -21,7 +21,7 @@ export class Bed extends Phaser.GameObjects.Container {
         super(scene, WIDTH, HEIGHT);
         this.patient = null;
         this.onOrganClick = onOrganClick;
-        this.x = 52 + slot * SPACING;
+        this.x = 30 + slot * SPACING;
         this.y = YPOS;
         this.depth = this.y + this.height / 2;
         this.createSprite();
@@ -79,6 +79,7 @@ export class Bed extends Phaser.GameObjects.Container {
             duration: 1000
         });
         this.patient = null;
+        uglySettings.stats.died++;
     }
 
     canBeInserted(organ: Organ): boolean {
@@ -89,7 +90,7 @@ export class Bed extends Phaser.GameObjects.Container {
     }
 
     generatePatient(missingOrganProb: number) {
-        this.patient = new Patient(this.scene, this, missingOrganProb);
+        this.patient = new Patient(this.scene, this, Math.random() < EASY_PATIENT_PROB, missingOrganProb);
         this.patient.addOrganClickListeners();
         this.sprite.setFrame(1);
         this.infoBoard.visible = true;

@@ -1,7 +1,7 @@
 import 'phaser';
 import { Bed } from './bed';
 import { Organ, OrganType, ORGAN_TYPES } from './organ';
-import { uglySettings, MIN_PROBLEM_INTERVAL, MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO_DECAY, PATIENT_MISSING_ORGAN_PROB } from './global';
+import { uglySettings, EASY_MIN_PROBLEM_INTERVAL, EASY_MAX_PROBLEM_INTERVAL, HARD_MIN_PROBLEM_INTERVAL, HARD_MAX_PROBLEM_INTERVAL, ORGAN_TIME_TO_DECAY } from './global';
 
 
 export class Patient extends Phaser.GameObjects.Container {
@@ -10,11 +10,12 @@ export class Patient extends Phaser.GameObjects.Container {
     organs: Record<OrganType, Organ>;
     private nextProblemTime: number;
     readonly doctorPosition: Phaser.Geom.Point;
+    private easy: boolean;
     private problemSound: Phaser.Sound.BaseSound;
     private extractOrganSound: Phaser.Sound.BaseSound;
     private insertOrganSound: Phaser.Sound.BaseSound;
 
-    constructor(scene: Phaser.Scene, bed: Bed, missingOrganProb: number) {
+    constructor(scene: Phaser.Scene, bed: Bed, easy: boolean, missingOrganProb: number) {
         super(scene);
         this.bed = bed;
         if (Math.random() < missingOrganProb) {
@@ -31,8 +32,9 @@ export class Patient extends Phaser.GameObjects.Container {
                 nephro: new Organ(this.scene, 'nephro', bed, this)
             };
         }
-        this.nextProblemTime = MIN_PROBLEM_INTERVAL + Math.random() * (MAX_PROBLEM_INTERVAL - MIN_PROBLEM_INTERVAL);
+        this.nextProblemTime = this.getNextProblemTime();
         this.doctorPosition = new Phaser.Geom.Point(bed.x - 20, bed.y + 30);
+        this.easy = easy;
         this.problemSound = this.scene.sound.add('problem');
         this.extractOrganSound = this.scene.sound.add('extract_organ');
         this.insertOrganSound = this.scene.sound.add('insert_organ');
@@ -47,6 +49,14 @@ export class Patient extends Phaser.GameObjects.Container {
         });
     }
 
+    private getNextProblemTime() {
+        if (this.easy) {
+            return EASY_MIN_PROBLEM_INTERVAL + Math.random() * (EASY_MAX_PROBLEM_INTERVAL - EASY_MIN_PROBLEM_INTERVAL);
+        } else {
+            return HARD_MIN_PROBLEM_INTERVAL + Math.random() * (HARD_MAX_PROBLEM_INTERVAL - HARD_MIN_PROBLEM_INTERVAL);
+        }
+    }
+
     update(time: number, delta: number) {
         if (uglySettings.updatesPaused) {
             return;
@@ -54,7 +64,7 @@ export class Patient extends Phaser.GameObjects.Container {
         this.nextProblemTime -= delta;
         if (this.nextProblemTime <= 0) {
             this.nextProblem();
-            this.nextProblemTime = 10000;
+            this.nextProblemTime = this.getNextProblemTime();
         }
         
         let dead = true;
