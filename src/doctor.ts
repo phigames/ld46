@@ -211,7 +211,13 @@ export class Doctor extends Phaser.GameObjects.Container {
         if (this.moveMode == 'start') {
             this.walkToStart(delta);
         } else if (this.target !== null) {
-            if (this.walkToTarget(delta)) {
+            if (this.target instanceof Organ && this.target.pickedUp) {
+                // free organ already has a new patient
+                console.log('cancel');
+                this.target = null;
+                this.nextTask = null;
+                this.moveMode = 'return';
+            } else if (this.walkToTarget(delta)) {
                 // arrived at target
                 if (this.target instanceof Patient || this.target instanceof TrashCan) {
                     if (this.organ === null) {
@@ -219,6 +225,7 @@ export class Doctor extends Phaser.GameObjects.Container {
                         if (this.organ !== null) {
                             // successful removal
                             this.add(this.organ);
+                            this.organ.pickedUp = true;
                         } else {
                             // failed removal
                             this.nextTask = null;
@@ -227,10 +234,12 @@ export class Doctor extends Phaser.GameObjects.Container {
                         if (this.target.setOrgan(this.organ)) {
                             // successful insertion
                             this.remove(this.organ);
+                            this.organ.pickedUp = false;
                             this.organ = null;
                             this.nextTask = null;
                         } else {
                             // failed insertion
+                            this.nextTask = null;
                         }
                     }
                     this.target = null;
@@ -239,9 +248,15 @@ export class Doctor extends Phaser.GameObjects.Container {
                     this.target.grind(this);
                     this.dead = true;
                 } else if (this.target instanceof Organ) {
-                    // TODO: check if organ is actually still there
-                    this.organ = this.target;
-                    this.add(this.organ);
+                    if (!this.target.pickedUp) {
+                        // successful retrieval
+                        this.organ = this.target;
+                        this.add(this.organ);
+                        this.organ.pickedUp = true;
+                    } else {
+                        // organ has already been taken
+                        this.nextTask = null;
+                    }
                     this.target = null;
                     this.moveMode = 'return';
                 }
