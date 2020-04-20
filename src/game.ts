@@ -95,7 +95,7 @@ export class Level extends Phaser.Scene {
         this.trashcanLeft = new TrashCan(this, 57, GAME_HEIGHT - 34);
         this.add.existing(this.trashcanLeft);
         this.trashcanLeft.on('pointerdown', () => this.onTrashcanClick(this.trashcanLeft));
-        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 58, GAME_HEIGHT - 3);
+        this.trashcanRight = new TrashCan(this, GAME_WIDTH - 58, GAME_HEIGHT - 34);
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 
@@ -193,7 +193,7 @@ export class Level extends Phaser.Scene {
             organ.x = Phaser.Math.Between(GAME_WIDTH / 2, GAME_WIDTH / 2 + 100);
             organ.y = Phaser.Math.Between(GAME_HEIGHT - 80, GAME_HEIGHT - 20);
             this.add.existing(organ);
-            organ.on('pointerdown', () => this.onFreeOrganClick.bind(organ));
+            organ.on('pointerdown', () => this.onFreeOrganClick(organ));
         }
     }
 
