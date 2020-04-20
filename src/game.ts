@@ -156,7 +156,7 @@ export class Level extends Phaser.Scene {
     }
 
     private spawnPatient() {
-        let bedIndices = [2, 5, 3, 0, 6, 1, 4];
+        let bedIndices = [4, 1, 3, 0, 6, 2, 5];
         for (let bedIndex of bedIndices) {
             let bed = this.beds[bedIndex];
             if (bed.patient === null) {
@@ -278,6 +278,7 @@ export class Level extends Phaser.Scene {
                 this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
             } else {
                 // no doctor available
+                this.hint(patient.bed.x + organ.x + 8, patient.bed.y + organ.y + 5, 'all doctors are busy');
                 this.invalidSound.play();
             }
         }
@@ -386,7 +387,7 @@ export class Level extends Phaser.Scene {
                 this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
             } else {
                 // no doctor available
-                this.hint(organ.x + 8, organ.y + 5, 'all doctory are busy');
+                this.hint(organ.x + 8, organ.y + 5, 'all doctors are busy');
                 this.invalidSound.play();
             }
         }

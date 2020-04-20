@@ -41,6 +41,7 @@ export class Bed extends Phaser.GameObjects.Container {
         this.sprite = this.scene.add.sprite(5, 30, 'bed', 0);
         this.add(this.sprite);
         this.infoBoard = this.scene.add.image(0, -25, 'infoboard');
+        this.infoBoard.visible = false;
         this.add(this.infoBoard);
         this.setSize(50, 112);
     }
@@ -48,6 +49,7 @@ export class Bed extends Phaser.GameObjects.Container {
     onPatientDied() {
         let oldPatient = this.patient;
         let oldSprite = this.sprite;
+        let oldInfoBoard = this.infoBoard;
         this.createSprite();
         this.sprite.alpha = 0;
         this.scene.tweens.add({
@@ -57,6 +59,7 @@ export class Bed extends Phaser.GameObjects.Container {
             onComplete: () => {
                 oldPatient.destroy();
                 oldSprite.destroy();
+                oldInfoBoard.destroy();
             }
         });
         this.scene.tweens.add({
@@ -78,6 +81,7 @@ export class Bed extends Phaser.GameObjects.Container {
         this.patient = new Patient(this.scene, this);
         this.patient.addOrganClickListeners();
         this.sprite.setFrame(1);
+        this.infoBoard.visible = true;
     }
 
     hasPatient(): boolean {
