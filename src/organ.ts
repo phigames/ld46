@@ -35,8 +35,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.dead = false;
         this.pickedUp = false;
         this.selected = false;
-        this.countdownText = scene.add.bitmapText(0, Math.round(offset.y - 3), 'akhbar', '');
-        this.countdownText.fontSize = 7;
+        this.countdownText = scene.add.bitmapText(0, Math.round(offset.y - 3), 'akhbar', '', 7);
         this.beepSound = this.scene.sound.add('beep');
         this.tintFill = false;
         this.setInteractive();

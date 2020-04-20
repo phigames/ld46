@@ -84,7 +84,7 @@ export class Level extends Phaser.Scene {
     timeToSpawnPatient: number;
     hoursOnClock: number;
     minutesOnClock: number;
-    clock: Phaser.GameObjects.Text;
+    clock: Phaser.GameObjects.BitmapText;
 
     invalidSound: Phaser.Sound.BaseSound;
     selectSound: Phaser.Sound.BaseSound;
@@ -157,7 +157,8 @@ export class Level extends Phaser.Scene {
         background.setInteractive();
         background.on('pointerdown', () => this.deselectAll());
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
-        this.clock = this.add.text(GAME_WIDTH - 39, 2, '', { fontFamily: FONT_FAMILY, color: '#dfb9ca', fontSize: '8px' });
+        this.clock = this.add.bitmapText(GAME_WIDTH - 39, 4, 'akhbar', '', 7);
+        this.clock.setTintFill(0xdfb9ca);
 
         this.selectionMarker = this.add.rectangle(0, 0, 50, 50);
         this.selectionMarker.fillAlpha = 0;
@@ -347,7 +348,8 @@ export class Level extends Phaser.Scene {
         if (duration === undefined) {
             duration = 1000;
         }
-        let text = this.add.text(Math.round(x), Math.round(y), message, { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        let text = this.add.bitmapText(Math.round(x), Math.round(y), 'akhbar', message, 7);
+        text.setTintFill(0x28221f);
         text.depth = 100000;
         this.tweens.add({
             targets: text,
