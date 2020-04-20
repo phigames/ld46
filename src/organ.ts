@@ -21,6 +21,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
     private timeToDecay: number;
     private dead: boolean;
     patient: Patient;
+    pickedUp: boolean;
     private selected: boolean;
     readonly countdownText: Phaser.GameObjects.Text;
     private beepSound: Phaser.Sound.BaseSound;
@@ -32,6 +33,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.organType = organType;
         this.timeToDecay = null;
         this.dead = false;
+        this.pickedUp = false;
         this.selected = false;
         this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.beepSound = this.scene.sound.add('beep');

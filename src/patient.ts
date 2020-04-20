@@ -32,6 +32,7 @@ export class Patient extends Phaser.GameObjects.Container {
                     this.organs[organType] = null;
                 }
             }
+            this.organs = null;
         });
     }
 
@@ -85,6 +86,9 @@ export class Patient extends Phaser.GameObjects.Container {
     }
 
     popOrgan(type: OrganType): Organ {
+        if (this.organs === null) {
+            return null;
+        }
         if (this.organs[type] !== null) {
             let organ: Organ = this.organs[type];
             organ.removeFromBed(this.bed);
@@ -97,8 +101,10 @@ export class Patient extends Phaser.GameObjects.Container {
     }
 
     setOrgan(organ: Organ): boolean {
+        if (this.organs === null) {
+            return false;
+        }
         let type = organ.getType();
-        
         if (this.organs[type] === null) {
             organ.addToBed(this.bed);
             organ.on('pointerdown', () => this.bed.onOrganClick(this, organ));
