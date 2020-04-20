@@ -26,7 +26,7 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
         this.scene.add.existing(organ);
         organ.x = this.x
         organ.y = this.y - 22;
-        organ.depth = 999;
+        organ.depth = 9000;
         this.scene.tweens.add({
             targets: organ,
             y: this.y + 20,
