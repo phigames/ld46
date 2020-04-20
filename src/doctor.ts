@@ -85,8 +85,6 @@ export class Doctor extends Phaser.GameObjects.Container {
     }
 
     moveOrgan(source: Patient | Organ, organType: OrganType, target: Patient | TrashCan | Grinder) {
-        console.log(`moving ${organType} from ${source} to ${target}`);
-        
         if (source instanceof Patient) {
             this.setRemoveTarget(source, organType);
         } else {
@@ -212,7 +210,6 @@ export class Doctor extends Phaser.GameObjects.Container {
         } else if (this.target !== null) {
             if (this.target instanceof Organ && this.target.pickedUp) {
                 // free organ already has a new patient
-                console.log('cancel');
                 this.target = null;
                 this.nextTask = null;
                 this.moveMode = 'return';

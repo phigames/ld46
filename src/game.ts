@@ -4,7 +4,7 @@ import { TrashCan } from './trashcan';
 import { Doctor } from './doctor';
 import { Patient } from './patient';
 import { OrganType, Organ } from './organ';
-import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY } from './global';
+import { uglySettings, DOCTOR_SPAWN_INTERVAL, GAME_WIDTH, GAME_HEIGHT, PATIENT_SPAWN_INTERVAL, DARK_COLOR, FONT_FAMILY, GRINDER_APPEAR_TIME, INITIAL_ORGAN_NUMBER } from './global';
 import { Grinder } from './grinder';
 
 
@@ -90,6 +90,7 @@ export class Level extends Phaser.Scene {
             this.beds.push(bed);
         }
         this.spawnPatient();
+        this.spawnOrgans(INITIAL_ORGAN_NUMBER);
 
         this.trashcanLeft = new TrashCan(this, 57, GAME_HEIGHT - 34);
         this.add.existing(this.trashcanLeft);
@@ -98,8 +99,20 @@ export class Level extends Phaser.Scene {
         this.add.existing(this.trashcanRight);
         this.trashcanRight.on('pointerdown', () => this.onTrashcanClick(this.trashcanRight));
 
-        this.grinder = new Grinder(this, GAME_WIDTH / 2, GAME_HEIGHT - 50, this.onFreeOrganClick.bind(this));
+        this.grinder = new Grinder(this, GAME_WIDTH / 2 - 50, GAME_HEIGHT - 50, this.onFreeOrganClick.bind(this));
+        this.grinder.y += 200;
+        this.grinder.back.y += 200;
         this.add.existing(this.grinder);
+        this.tweens.add({
+            targets: [ this.grinder, this.grinder.back ],
+            y: GAME_HEIGHT - 50,
+            duration: 1000,
+            ease: 'Quad.Out',
+            delay: GRINDER_APPEAR_TIME,
+            onComplete: () => {
+                this.hint(this.grinder.x - 100, this.grinder.y - 50, 'when organs run out, sacrifices must be made.', 5000);
+            }
+        });
         this.grinder.on('pointerdown', () => this.onGrinderClick(this.grinder));
 
         this.anims.create({
@@ -166,10 +179,27 @@ export class Level extends Phaser.Scene {
         }
     }
 
+    private spawnOrgans(number: number) {
+        for (let i = 0; i < number; i++) {
+            let r = Math.random();
+            let organ: Organ;
+            if (r < 0.33) {
+                organ = new Organ(this, 'cranium');
+            } else if (r < 0.67) {
+                organ = new Organ(this, 'liver');
+            } else {
+                organ = new Organ(this, 'nephro');
+            }
+            organ.x = Phaser.Math.Between(GAME_WIDTH / 2, GAME_WIDTH / 2 + 100);
+            organ.y = Phaser.Math.Between(GAME_HEIGHT - 80, GAME_HEIGHT - 20);
+            this.add.existing(organ);
+            organ.on('pointerdown', () => this.onFreeOrganClick.bind(organ));
+        }
+    }
+
     popup(message: string) {
         uglySettings.updatesPaused = true;
         let popup = this.add.rectangle(100, 100, 200, 100);
-        console.log(message);
         popup.on('click', () => {
             uglySettings.updatesPaused = false;
             popup.off('click');
@@ -177,7 +207,10 @@ export class Level extends Phaser.Scene {
 
     }
 
-    hint(x: number, y: number, message: string) {
+    hint(x: number, y: number, message: string, duration?: number) {
+        if (duration === undefined) {
+            duration = 1000;
+        }
         let text = this.add.text(x, y, message, { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         text.depth = 100000;
         this.tweens.add({
@@ -185,7 +218,7 @@ export class Level extends Phaser.Scene {
             y: '-=10',
             alpha: 0,
             duration: 300,
-            delay: 1000
+            delay: duration
         });
     }
 
@@ -213,7 +246,6 @@ export class Level extends Phaser.Scene {
         this.selectionMarker.y = Math.round(this.selectedDoc.y);
         this.selectionMarker.visible = true;
         this.selectSound.play();
-        console.log(this.selectionMarker);
     }
 
     private selectOrgan(organ: Organ) {
@@ -233,8 +265,6 @@ export class Level extends Phaser.Scene {
         }
         this.selectionMarker.visible = true;
         this.selectSound.play();
-        console.log(this.selectionMarker);
-        
     }
 
     private deselectAll() {

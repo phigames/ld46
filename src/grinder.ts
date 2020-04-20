@@ -8,7 +8,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
     private origX: number;
     private origY: number;
     private onOrganClick: (organ: Organ) => void;
-    private back: Phaser.GameObjects.Image;
+    readonly back: Phaser.GameObjects.Image;
 
     constructor(scene: Phaser.Scene, x: number, y: number, onOrganClick: (organ: Organ) => void) {
         super(scene, 0, 0, 'grinder_front');
@@ -65,7 +65,7 @@ export class Grinder extends Phaser.GameObjects.Sprite {
                     this.scene.add.existing(organ);
                     anyTween = this.scene.tweens.add({
                         targets: organ,
-                        x: this.x + 50 + Math.random() * 50,
+                        x: this.x + 50 + Math.random() * 80,
                         y: this.y + Math.random() * 50 - 25,
                         duration: 500,
                         delay: 1000,
