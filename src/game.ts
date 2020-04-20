@@ -228,16 +228,17 @@ export class Level extends Phaser.Scene {
         });
     }
 
-    private getAvailableDoctor(): Doctor {
+    private getClosestAvailableDoctor(x: number): Doctor {
+        let closestDoctor = null;
         for (let child of this.children.getAll()) {
             if (child.name == 'doctor') {
                 let doctor = <Doctor>child;
-                if (doctor.isReadyToRemove()) {
-                    return doctor;
+                if (doctor.isReadyToRemove() && (closestDoctor === null || Math.abs(doctor.x - x) < Math.abs(closestDoctor.x - x))) {
+                    closestDoctor = doctor;
                 }
             }
         }
-        return null;
+        return closestDoctor;
     }
 
     private selectDoctor(doctor: Doctor) {
@@ -313,7 +314,7 @@ export class Level extends Phaser.Scene {
             this.invalidSound.play();
             this.deselectAll();
         } else {
-            this.selectedDoc = this.getAvailableDoctor();
+            this.selectedDoc = this.getClosestAvailableDoctor(patient.bed.x + organ.x);
             if (this.selectedDoc !== null) {
                 this.selectOrgan(organ);
                 this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
@@ -424,7 +425,7 @@ export class Level extends Phaser.Scene {
             }
             this.deselectAll();
         } else {
-            this.selectedDoc = this.getAvailableDoctor();
+            this.selectedDoc = this.getClosestAvailableDoctor(organ.x);
             if (this.selectedDoc !== null) {
                 this.selectOrgan(organ);
                 this.hint(this.selectionMarker.x + 8, this.selectionMarker.y + 5, 'where should this go?');
