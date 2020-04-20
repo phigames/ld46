@@ -30,7 +30,7 @@ export class TrashCan extends Phaser.GameObjects.Sprite {
         this.scene.tweens.add({
             targets: organ,
             y: this.y + 20,
-            ease: 'Quad.In',
+            ease: 'Quad.easeIn',
             duration: 500,
             onComplete: () => {
                 organ.destroy();

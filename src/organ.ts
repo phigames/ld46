@@ -1,6 +1,6 @@
 import 'phaser';
 import { Bed } from './bed';
-import { uglySettings, HOVER_OPACITY, FONT_FAMILY, DARK_COLOR, SELECT_OPACITY } from './global';
+import { uglySettings, HOVER_OPACITY, FONT_FAMILY, DARK_COLOR } from './global';
 import { Patient } from './patient';
 
 
@@ -35,7 +35,7 @@ export class Organ extends Phaser.GameObjects.Sprite {
         this.dead = false;
         this.pickedUp = false;
         this.selected = false;
-        this.countdownText = scene.add.text(0, offset.y - 5, '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
+        this.countdownText = scene.add.text(0, Math.round(offset.y - 5), '', { fontFamily: FONT_FAMILY, color: DARK_COLOR, fontSize: '8px' });
         this.beepSound = this.scene.sound.add('beep');
         this.tintFill = false;
         this.setInteractive();
