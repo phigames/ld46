@@ -140,7 +140,7 @@ class Level extends Phaser.Scene {
         background.setInteractive();
         background.on('pointerdown', () => this.deselectAll());
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'pits_front').depth = 10000;
-        this.clock = this.add.text(GAME_WIDTH - 40, 30, '', { fontFamily: FONT_FAMILY, color: '#dfb9ca', fontSize: '8px' });
+        this.clock = this.add.text(GAME_WIDTH - 39, 2, '', { fontFamily: FONT_FAMILY, color: '#dfb9ca', fontSize: '8px' });
 
         this.selectionMarker = this.add.rectangle(0, 0, 50, 50);
         this.selectionMarker.fillAlpha = 0;
