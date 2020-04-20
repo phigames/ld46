@@ -2,7 +2,8 @@ export var uglySettings = {
     updatesPaused: false,
     stats: {
         died: 0,
-        sacrificed: 0
+        sacrificed: 0,
+        transplanted: 0
     }
 }
 

@@ -44,27 +44,28 @@ class TitleScreen extends Phaser.Scene {
 
 class EndScreen extends Phaser.Scene {
 
-    died: number;
-    sacrificed: number;
-
     constructor() {
         super('end');
     }
     
     preload() {
-        this.load.image('endscreen', 'assets/titlescreen.png');
+        this.load.spritesheet('endscreen', `assets/endscreen.png`, { frameWidth: GAME_WIDTH, frameHeight: GAME_HEIGHT });
         this.load.audio('endscreen', 'assets/endscreen.ogg');
     }
 
     create(data: object) {
-        console.log('title');
+        this.anims.create({
+            key: 'smoke',
+            frames: this.anims.generateFrameNumbers('endscreen', { start: 0, end: 3 }),
+            frameRate: 5,
+            repeat: -1
+        });
         
-        this.died = data['died'];
-        this.sacrificed = data['sacrificed'];
-        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'endscreen')
-            .setInteractive()
-            .on('pointerdown', () => { /* TODO */ });
-        this.add.text(50, 50, `${this.died}, ${this.sacrificed}`, { fontFamily: FONT_FAMILY, color: 0x28221f });
+        this.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'endscreen')
+            .play('smoke');
+        this.add.text(20, 17, `patients dead: ${data['died']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
+        this.add.text(20, 46, `doctors shredded: ${data['sacrificed']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
+        this.add.text(20, 74, `organs transplanted: ${data['transplanted']}`, { fontFamily: FONT_FAMILY, color: DARK_COLOR });
 
         this.sound.play('endscreen');
     }
@@ -249,10 +250,10 @@ export class Level extends Phaser.Scene {
             if (this.hoursOnClock > 24) {
                 this.hoursOnClock -= 24;
             }
-            if (this.hoursOnClock == 20) {
+            if (this.hoursOnClock == 8) {
                 // end of game
                 this.backgroundSound.stop();
-                this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed });
+                this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
             }
         }
         this.clock.text = `${((this.hoursOnClock - 1) % 12 + 1).toString().padStart(2, '0')}:${(Math.floor(this.minutesOnClock / 15) * 15).toString().padStart(2, '0')} ${this.hoursOnClock == 24 || this.hoursOnClock < 12 ? 'am' : 'pm'}`;

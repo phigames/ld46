@@ -131,6 +131,7 @@ export class Patient extends Phaser.GameObjects.Container {
             organ.on('pointerdown', () => this.bed.onOrganClick(this, organ));
             this.organs[type] = organ;
             this.insertOrganSound.play();
+            uglySettings.stats.transplanted++;
             return true;
         }
         return false;
