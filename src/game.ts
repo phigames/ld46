@@ -252,7 +252,7 @@ export class Level extends Phaser.Scene {
             }
             if (this.hoursOnClock == 8) {
                 // end of game
-                this.backgroundSound.stop();
+                this.sound.stopAll();
                 this.scene.start('end', { died: uglySettings.stats.died, sacrificed: uglySettings.stats.sacrificed, transplanted: uglySettings.stats.transplanted });
             }
         }
